@@ -13,6 +13,12 @@ IDirectSoundBuffer_SetFilter = 0x17B5E0  # -> 0x17B4B3 -> 0x17B05C: forwards the
                                     # PGR2's SetFilter leaf 0x1EBE48 instruction for instruction (its voice call 0x1F2B45
                                     # 0.83 alike); between SetVolume 0x17B5C4 and SetMixBins 0x17B5FC as in 5659's order.
                                     # Driving.xbe's DSOUND links it, default.xbe's does not; the game 0x1429F0 calls it
+D3DDevice_SetPixelShaderConstant = 0x16B160  # ret 0xC (0x16B424); its opening reads the current pixel shader's definition
+                                    # ([[pDevice]+0x370]+8, 0x16B16C) as PGR2's 0x1C27C0 does, instruction for instruction;
+                                    # the game 0xF44AF calls it (default.xbe does not link it)
+IDirectSound_SetI3DL2Listener = 0x17BE1B  # this - 8, 2 arguments (ret 0xC) -> 0x17BAF4: copies a DSI3DL2LISTENER (Room,
+                                    # RoomHF, RolloffFactor, DecayTime ... from 0x17BB3C) into the effect settings,
+                                    # DSERR 0x88780032 without an effects image (0x17BB31); the game 0x140A80 calls it
 
 [data]
 XPP_GamepadType         = 0x183AEC  # XDEVICE_TYPE_GAMEPAD: the game passes it to XInputOpen 0x1848AD (0x1084FE, 0x108712);
