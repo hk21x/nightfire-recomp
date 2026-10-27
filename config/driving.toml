@@ -1,0 +1,4 @@
+# Hand-kept recompiler config for Driving.xbe (the driving levels), the file the build reads. config/driving_game.toml
+# is xbe_symbols output and every scan rewrites it, so nothing is edited there: it is included here, and everything
+# added by hand goes below. Sign with config/nightfire.toml (see there).
+includes = ["driving_game.toml"]

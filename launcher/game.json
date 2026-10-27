@@ -1,0 +1,20 @@
+{
+    "title": "007: NightFire",
+    "short": "NightFire",
+    "exe": "Nightfire",
+    "exes": [
+        "Nightfire",
+        "NightfireDriving"
+    ],
+    "xbe": "default.xbe",
+    "xbes": [
+        "default.xbe",
+        "Driving.xbe"
+    ],
+    "releases": {
+        "796222e048be3595c323b4c6d9795107132dc4ca": "PAL (Europe)"
+    },
+    "repo": "https://github.com/hk21x/nightfire-recomp.git",
+    "branch": "main",
+    "toolchain": "https://raw.githubusercontent.com/hk21x/nightfire-recomp/main/launcher/toolchain.json"
+}

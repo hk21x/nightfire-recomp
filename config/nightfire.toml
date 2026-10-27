@@ -1,0 +1,10 @@
+# Hand-kept recompiler config for default.xbe (the on-foot levels), the file the build reads. config/game.toml is
+# xbe_symbols output and every scan rewrites it, so nothing is edited there: it is included here, and everything added
+# by hand goes below ([[hook]], [[function]], [[switch]], [functions], [xbe] data_ranges / trace). A symbol found by
+# hand is signed into the SDK instead, then both xbes rescanned (each rescan must reproduce its scan file):
+#   build/linux/xbe_symbols --sign config/nightfire.toml config/driving.toml --out sdk/xdk/4831/signatures.toml
+includes = ["game.toml"]
+
+[functions]
+0x157334 = "XPP_DeviceTypeInit_157334"  # the init of the first two XPP device types (descriptors 0x1572D8, 0x1572F0 at +4),
+                                        # called through the table 0x157214..0x157220 by 0x15757B; no decode reached it
