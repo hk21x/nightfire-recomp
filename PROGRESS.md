@@ -3,17 +3,17 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: 1 - boots. default.xbe: language select, the three intro movies (XMV), the title screen; START hands over
-  to Driving.xbe (XLaunchNewImage), which holds EA's front end and driving levels: it plays the Paris mission's intro
-  movie and crashes after it in D3D 0x16B160 (a null + 8)
-- XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions (the rest not linked), 12 of 14
-  data (+ the gamepad record by hand); Driving.xbe 108 by signature + 2 by hand. Layout proven from NightFire's code:
-  5659 behaviour throughout, own offsets
-- Push buffers: none. No CreatePushBuffer / Begin/EndPushBuffer / RunPushBuffer is linked; game code never touches
-  the push pointer (it writes D3D shadow state directly, like the inline setters)
-- Region: PAL (GameInfo::pal_console): without it the game takes NTSC paths and skips movies the disc only has as PAL
-- SDK: task branch `nightfire` of the fork
-- Smoke: none yet
+- Milestone: 2 - gameplay headless. default.xbe: language select, the XMV intro movies, the title; START hands over to
+  Driving.xbe (EA's front end and driving levels), which plays the Paris intro movie and the Paris mission (Bond
+  sniping from the van; with no input the mission fails to its menu): 200 s, 8280 frames, no traps
+- XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions (the rest not linked), Driving.xbe
+  112 (4 of them Driving.xbe's own, by hand); layout proven from NightFire's code (5659 behaviour, own offsets)
+- Push buffers: none (no push buffer function linked, game code never touches the push pointer)
+- Region: PAL (GameInfo::pal_console); the launch data carries the video standard into Driving.xbe
+- SDK: task branch `nightfire` (pushed). PGR1's smoke passes on it (2026-10-27); PGR2, EoN and PGR1's frame check
+  still to run before fork main
+- Smoke: none yet (the game crosses two exes: scripts/smoke.sh follows one)
+- Open: the Mission Failed menu panel's texture is noise in the reference renderer (to check on Windows first)
 
 ## Disc
 - PAL, title 0x45410026 (EA), certificate region 0x4, version 2. Ghidra: `~/ghidra-projects/nightfire` (game.exe,
@@ -26,6 +26,26 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-27 - The Paris mission plays headless (main; sdk nightfire)
+
+After the intro movie Driving.xbe stopped three times, each an XDK function only it links:
+1. D3D 0x16B160 read the current pixel shader's definition ([[pDevice]+0x370]+8, null with hosted shaders):
+   D3DDevice_SetPixelShaderConstant (its opening is PGR2's 0x1C27C0 instruction for instruction, ret 0xC).
+2. DSOUND 0x17BE1B -> 0x17BAF4 copies a DSI3DL2LISTENER: IDirectSound_SetI3DL2Listener.
+3. 73 s in, a 0x15000 byte contiguous allocation failed with 64156 KB in use. XBE_MEM_LOG=2 (new, sdk) summed the
+   live blocks by caller: the game's own 36 MB heap (0x10E818), its D3D resources (454 blocks, 6.9 MB), its render
+   targets, and 10 MB the host made: three swap buffers and the depth buffer, as a console makes, plus a copy target
+   (1.2 MB) and the DrawVerticesUP ring (4 MB) no console has. sdk: physical memory is mapped to 128 MB as on a
+   development kit; the title's allocator and statistics keep the console's 64 MB and the host's own buffers (copy
+   target, UP ring, scratch push) come from the part past it. Then 200 s of the mission without a trap. PGR1's
+   smoke passes on the branch.
+
+Names signed into sdk/xdk/4831 from both hand configs (.local/resign.sh); both rescans reproduce every hand name.
+
+Next: a pad script through the mission (and the front end: START at the title went straight into mission 1 with the
+"Default" profile), a smoke test across the two exes, then PGR2 / EoN smoke and PGR1's frame check before the
+branch goes into fork main; a Windows build for Harry.
 
 ### 2026-10-27 - XDK 4831 named; title screen; Driving.xbe reached and plays its intro movie (main; sdk nightfire)
 
