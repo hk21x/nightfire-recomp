@@ -3,14 +3,17 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: 0 - set up. default.xbe recompiles and starts headless; it stops in XAPI's USB init (XInitDevices
-  unnamed). Driving.xbe recompiles, not yet run
-- XDK: 4831 for every library, new to the SDK (`sdk/xdk/4831`, seeded from 5659). default.xbe 53 of 251 functions,
-  3 of 13 data; Driving.xbe 52 of 251, 2 of 13. Layout: 5659's values, none verified for 4831 yet
-- Push buffers: preliminary, no NV2A command stores in game code; CreatePushBuffer / RunPushBuffer not yet identified
-  (to settle once the D3D functions are named)
-- SDK: task branch `nightfire` of the fork (from main 0ade542)
-- Smoke: none yet (game.env's pad and thresholds are placeholders)
+- Milestone: 1 - boots. default.xbe: language select, the three intro movies (XMV), the title screen; START hands over
+  to Driving.xbe (XLaunchNewImage), which holds EA's front end and driving levels: it plays the Paris mission's intro
+  movie and crashes after it in D3D 0x16B160 (a null + 8)
+- XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions (the rest not linked), 12 of 14
+  data (+ the gamepad record by hand); Driving.xbe 108 by signature + 2 by hand. Layout proven from NightFire's code:
+  5659 behaviour throughout, own offsets
+- Push buffers: none. No CreatePushBuffer / Begin/EndPushBuffer / RunPushBuffer is linked; game code never touches
+  the push pointer (it writes D3D shadow state directly, like the inline setters)
+- Region: PAL (GameInfo::pal_console): without it the game takes NTSC paths and skips movies the disc only has as PAL
+- SDK: task branch `nightfire` of the fork
+- Smoke: none yet
 
 ## Disc
 - PAL, title 0x45410026 (EA), certificate region 0x4, version 2. Ghidra: `~/ghidra-projects/nightfire` (game.exe,
@@ -23,6 +26,41 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-27 - XDK 4831 named; title screen; Driving.xbe reached and plays its intro movie (main; sdk nightfire)
+
+Named with three parallel read-only passes (D3D functions and data, the D3D layout, DSOUND), each against PGR2's 5659
+bodies (instruction sequences with numbers masked, callees followed) and checked on NightFire's own instructions;
+XAPI/XPP by hand. Evidence is in config/nightfire.toml, sdk/xdk/4831/layout.toml and .local/match/result_*.txt.
+- D3D: 51 functions by body, render state slot and push methods (byte-identical setters told apart by slot); the
+  data (pDevice 0x1117C0, RenderState 0x1119D0, PresentInterval 0x111BCC, ...) found by both D3D passes alike.
+- Layout: 5659's way on every 3948/5659 difference (state numbering, Swap, frame buffer pointers, present interval
+  global, D3DPRESENT_PARAMETERS to +0x40, D3DVBLANKDATA); device size 0x2C30, miniport at +0x23C0. Spot-checked.
+- DSOUND: 41 functions by their chains to the leaf (4831 has no .XTLID). The scan had SetMixBins/SetMixBinVolumes
+  swapped. Mix bins as 5659, headroom as 3948.
+- Signed into sdk/xdk/4831 from default.xbe (137 of 252); both rescans reproduce the hand names. Driving.xbe's 100
+  shared library names compared with default.xbe's by call chain (all 0.97 or more).
+
+Boot, one stop at a time:
+1. XInitDevices unnamed: the USB driver touched 0xFED00000. Named (0x15753D) with XInputOpen/Close, XDEVICE_TYPE_GAMEPAD.
+2. Direct3D_CreateDevice unnamed: 0xFD001804. With the D3D names: 120 s without a trap, the title screen (REF frames).
+3. START launches driving.xbe: EA's front end and driving levels are that xbe, so it is on the main path. Its XPP
+   table init 0x183BF4 needed `[functions]` as default.xbe's did; DirectSoundCreateBuffer 0x17C2A0 (default.xbe does
+   not link it) and IDirectSoundBuffer_SetFilter 0x17B5E0 (4831's Driving.xbe DSOUND has it, default.xbe's not) named
+   by hand after APU faults.
+4. Driving.xbe then hung after 60 frames in a stream loop (0x14C800): EA's file layer opened
+   `NTSC\eng\paris_intro.mad`, which is not on the disc, and a failed open leaves the stream busy for good. The movies
+   are in driving/misc.viv under `pal\<language>\`: the video standard default.xbe passes in the launch data
+   (offset 0xE1C) was NTSC. `GameInfo::pal_console` (as EoN): default.xbe then shows the language select and the
+   three XMV intro movies, which needed D3DDevice_GetRasterStatus hosted (sdk: the XMV player read the CRTC
+   register 0x600808 through the GPU base); its launch data now says PAL and Driving.xbe plays the Paris intro movie.
+   Tried first: disc reads paced at 6 MB/s (60 -> 240 frames, not the cause), OBJECT_PATH_NOT_FOUND for a missing
+   folder (no change, reverted).
+
+Tools: .local/drv.sh (recompile and run Driving.xbe from .local/launch_title_start_pal.bin), .local/drvstack.sh
+(thread stacks of a hang), .local/tools/{seq,align,ident,xmatch,chain}.py (matching).
+
+Next: the crash after the Paris movie in D3D 0x16B160 (Driving.xbe, reading [null + 8]; from game 0xF44A0).
 
 ### 2026-10-27 - Repository set up; first scans and first boot attempt (main; sdk nightfire)
 

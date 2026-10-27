@@ -2,3 +2,22 @@
 # is xbe_symbols output and every scan rewrites it, so nothing is edited there: it is included here, and everything
 # added by hand goes below. Sign with config/nightfire.toml (see there).
 includes = ["driving_game.toml"]
+
+# The names default.xbe's hand config proves are signed into sdk/xdk/4831 and found here by the scan; every name both
+# xbes have was compared by its call chain (callees 5 deep) and agrees (0.97 or more).
+[symbols]
+DirectSoundCreateBuffer = 0x17C2A0  # (desc, ppBuffer) ret 8 (0x17C2F4): 0x17BFE8 allocates 0x24 bytes, constructs them
+                                    # (0x17B915) and returns the object + 0x1C, the buffer interface the C API thunks
+                                    # take back by 0x1C; default.xbe does not link it (it calls IDirectSound_CreateSoundBuffer)
+IDirectSoundBuffer_SetFilter = 0x17B5E0  # -> 0x17B4B3 -> 0x17B05C: forwards the argument to the voice at +0xC (0x17E53F),
+                                    # PGR2's SetFilter leaf 0x1EBE48 instruction for instruction (its voice call 0x1F2B45
+                                    # 0.83 alike); between SetVolume 0x17B5C4 and SetMixBins 0x17B5FC as in 5659's order.
+                                    # Driving.xbe's DSOUND links it, default.xbe's does not; the game 0x1429F0 calls it
+
+[data]
+XPP_GamepadType         = 0x183AEC  # XDEVICE_TYPE_GAMEPAD: the game passes it to XInputOpen 0x1848AD (0x1084FE, 0x108712);
+                                    # 0x2C into XPP, as default.xbe's 0x15722C
+
+[functions]
+0x183BF4 = "XPP_DeviceTypeInit_183BF4"  # the first two XPP device types' init (descriptors 0x183B98, 0x183BB0 at +4), called
+                                        # through the table 0x183AD4..0x183AE0 by XInitDevices 0x183DFD; no decode reached it

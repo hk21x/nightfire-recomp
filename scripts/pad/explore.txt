@@ -1,0 +1,12 @@
+# vblank buttons [vblanks held]   (60 vblanks a second; one line per press)
+# The title's "Press START" is up by 1200; START there, then A every 5 seconds into the menus
+1300 START 20
+1600 A 10
+1900 A 10
+2200 A 10
+2500 A 10
+2800 A 10
+3100 A 10
+3400 A 10
+3700 A 10
+4000 A 10
