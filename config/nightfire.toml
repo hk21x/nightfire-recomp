@@ -5,6 +5,20 @@
 #   build/linux/xbe_symbols --sign config/nightfire.toml config/driving.toml --out sdk/xdk/4831/signatures.toml
 includes = ["game.toml"]
 
+# XAPI / XPP (4831) the scan misses: each by its body against PGR2's (5659) or PGR1's (3948) and the calls given
+[symbols]
+XInitDevices            = 0x15753D  # allocates the 0xB4 byte USB host object, runs the device type table's inits
+                                    # (0x15757B), starts the controller; stdcall 2 (5659 0x26D108); game 0xE761C calls it
+                                    # through the jmp 0x158132 (3948's XInitDevices is the same thunk)
+XInputOpen              = 0x15800F  # ret 0x10 (0x158062); the game 0xE7657 passes XDEVICE_TYPE_GAMEPAD 0x15722C (5659 0x26D880)
+XInputClose             = 0x158065  # ret 4 (0x15806E), closes through 0x1588DB; game 0xE770C (5659 0x26D8D6)
+XLaunchNewImageA        = 0xEB0FB   # takes "D:\" paths only (0xEB12E..0xEB146), else the launch hook [0x163180]; 3948 0xD3B2C
+XapiVerifyMediaInDrive  = 0xED7BD   # MODE SENSE 0x5A (0xED838), STATUS_NO_MEDIA_IN_DEVICE 0xC0000014 (0xED86D); XAPI init 0xED90A
+
+[data]
+XPP_GamepadType         = 0x15722C  # XDEVICE_TYPE_GAMEPAD: the game passes it to XInputOpen (0xE7652) and XGetDevices 0x158137
+                                    # (0xE7621), which returns +0, clears +4 and copies +0 to +8 (XPP_Current/Changed/Previous)
+
 [functions]
 0x157334 = "XPP_DeviceTypeInit_157334"  # the init of the first two XPP device types (descriptors 0x1572D8, 0x1572F0 at +4),
                                         # called through the table 0x157214..0x157220 by 0x15757B; no decode reached it
