@@ -10,7 +10,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 41ac590 (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at ca1d0f9 (2026-10-28: point sprites through stage 3); before that 41ac590 (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; to be tried on Windows
@@ -45,7 +45,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - On-foot play headless: scripts/pad/mp_bots.txt (Multiplayer, one bot, Skyrail) from launch_quit_to_menu.bin.
 - The snow (Harry's F3 captures): one fixed-function point-sprite draw of 4096 points with its texture on stage 3,
   stage 0 holding the last draw's (ferns, spheres, stripes). SDK branch nightfire-pointsprite: such a draw uses stage 3
-  as its first stage (the Xbox gives point sprite coordinates to stage 3 alone). Gate running; not in fork main yet.
+  as its first stage (the Xbox gives point sprite coordinates to stage 3 alone). Gate passed (EoN, PGR2, PGR1 smoke,
+  PGR1's frame check; PGR2's point sprites all have a pixel shader, PGR1 and EoN draw none): fork main ca1d0f9.
 - Smoke OK.
 
 ### 2026-10-28 - The mouse past the game's stick dead zone (pc-features)
