@@ -1,0 +1,4 @@
+# default.xbe (PAL): A picks English at the language select (up 120..600), the EA and MGM movies play, the title's
+# "Press START" is up from about 1560: START there relaunches into Driving.xbe (scripts/pad/paris.txt)
+300 A 10
+2000 START 20

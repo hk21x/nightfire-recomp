@@ -27,8 +27,8 @@ session. LESSONS.md is what the PGR2, EoN, PGR1 and Forza ports learned; check i
 - `scripts/harness.sh [secs] [pad] [ENV=..]`   build + run default.xbe headless (`REF=N` CPU frames into `captures/`,
   `KEEP_HDD=1` keeps the emulated disk, `snap`/`memdump`/`poke` files in the run folder). Driving.xbe runs headless
   only from launch data default.xbe wrote (EoN's way, LESSONS.md "Two xbes")
-- `scripts/smoke.sh`   boot -> gameplay headless; must print SMOKE OK before every fast-forward of `main` (once the
-  game reaches gameplay; until then the pad and thresholds in game.env are placeholders)
+- `scripts/smoke.sh`   default.xbe's title -> START -> Driving.xbe's Paris mission headless (about 4 minutes, two
+  runs: scripts/pad/smoke.txt then scripts/pad/paris.txt); must print SMOKE OK before every fast-forward of `main`
 - `scripts/wincheck.sh`   Windows-only sources against mingw headers; `scripts/shadercheck.sh`   generated HLSL with DXC
 - Ghidra: `python3 sdk/tools/symbols/xbe2pe.py config/nightfire.toml .local/game.exe` (and `config/driving.toml
   .local/driving.exe`), both imported into `~/ghidra-projects/nightfire`; then

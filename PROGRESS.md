@@ -10,9 +10,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   112 (4 of them Driving.xbe's own, by hand); layout proven from NightFire's code (5659 behaviour, own offsets)
 - Push buffers: none (no push buffer function linked, game code never touches the push pointer)
 - Region: PAL (GameInfo::pal_console); the launch data carries the video standard into Driving.xbe
-- SDK: task branch `nightfire` (pushed). PGR1's smoke passes on it (2026-10-27); PGR2, EoN and PGR1's frame check
-  still to run before fork main
-- Smoke: none yet (the game crosses two exes: scripts/smoke.sh follows one)
+- SDK: task branch `nightfire` (pushed). PGR1's smoke passes on it (2026-10-28, with the smoke change); PGR2, EoN
+  and PGR1's frame check still to run before fork main
+- GitHub: remote origin git@github.com:hk21x/nightfire-recomp.git set; the private repository is to be made by Harry
+- Smoke: scripts/smoke.sh: SMOKE OK (2026-10-28): title, START, relaunch, Driving.xbe's Paris mission (146 draws a
+  frame at the end), about 4 minutes; it fails without START (no relaunch)
 - Open: the Mission Failed menu panel's texture is noise in the reference renderer (to check on Windows first)
 
 ## Disc
@@ -26,6 +28,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-28 - Pad scripts and a smoke test across the two xbes (main; sdk nightfire)
+
+PAL boot (frames every 120, no input): language select 120..600 (it moves on by itself), the EA and MGM movies to
+1200, the title from 1440, "Press START" from about 1560 (24 draws a frame). scripts/pad/smoke.txt: A at 300, START
+at 2000; the relaunch follows at about 34 s.
+
+Driving.xbe, Paris (scripts/pad/paris.txt, vblanks from its own start): the sniper tutorial from about 1500 passes
+on RT every 40 vblanks with auto-aim; its closing movie leads (about 5100) into the Aston Martin's chase. RT
+accelerates; A brakes and reverses (A+RT reversed into the camera). Unsteered, the car meets the barriers and the
+mission fails to its menu at about 7200 (A there replays the tutorial). Movie decoding makes frame times vary
+between runs, so presses after a movie are timed loosely.
+
+sdk: smoke.sh takes a second xbe (SMOKE_NEXT_GEN/NAME/PAD/SECS): the first run must relaunch, the next xbe runs on
+its disk and launch data and gets the drawing checks; SMOKE_SECS. NightFire: SMOKE OK (title 24 draws a frame,
+Paris 146); without START it fails ("no relaunch"); PGR1's smoke unchanged on the branch.
+
+Next: steering through the chase (the harness's cmd file takes presses live), PGR2 / EoN smoke and PGR1's frame
+check, then the branch into fork main and a Windows build.
 
 ### 2026-10-27 - The Paris mission plays headless (main; sdk nightfire)
 
