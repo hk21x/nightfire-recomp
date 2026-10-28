@@ -10,8 +10,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: task branch `nightfire` (pushed). PGR1 and PGR2 smoke OK on it; EoN's smoke fails on its own (also without
-  this branch): fork main not moved yet, so the launcher cannot build this game; build.bat can
+- SDK: the fork's main at 41ac590 (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+  PGR1's frame check); the launcher can build this game now
 - Smoke: scripts/smoke.sh, title -> START -> Driving.xbe's Paris mission, about 4 minutes
 
 ## Disc
@@ -25,6 +25,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-28 - The SDK branch in fork main (main; sdk 41ac590)
+
+EoN's smoke had not failed: its default length is 240 s and 150 s ends inside its intro movie (EoN's session; the
+note was wrong). Gate on the nightfire tip: EoN main 2146a11 with its SDK bfbdc0a merged with nightfire SMOKE OK
+(race 11736 draws a frame, /home/harry/eon-soak); PGR2 SMOKE OK (2007); PGR1 SMOKE OK (2811) and its frame check a
+live race (.local/mm/after.png, draws 6156269 -> 6242839 a second apart). The recompiler change regenerates PGR2's
+and PGR1's code byte for byte. Fork main fast-forwarded 0ade542 -> 41ac590 (14 commits); this repository already
+pins it.
+
+Next: PC features: skip intro, widescreen, FOV, mouse aim and menus, PC settings in the game's own menu.
 
 ### 2026-10-28 - Windows: a long session clean (main)
 
