@@ -4,5 +4,6 @@
 #include <cstdint>
 
 namespace nf {
+extern const bool kDriving;  // Driving.xbe's exe (src/driving/hooks.cpp), default.xbe's false (src/game/hooks.cpp)
 extern bool skip_intro;  // no EA and MGM logo movies at boot (HideFile)
 }  // namespace nf
