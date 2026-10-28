@@ -8,6 +8,7 @@
 // D turned. While controller 1 is played on the keyboard and mouse its player is read as style 0 for the call; a
 // controller keeps the chosen style.
 
+#include "common/nightfire.h"
 #include "core/input.h"
 #include "core/log.h"
 #include "kernel/kernel.h"
@@ -37,4 +38,5 @@ X86_FUNC(sub_000DE720) {
     if (style_at) kernel::G<uint16_t>(style_at) = 0;
     __imp__sub_000DE720(ctx, base);
     if (style_at) kernel::G<uint16_t>(style_at) = uint16_t(style);
+    nf::MouseAsStick();
 }

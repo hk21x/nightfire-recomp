@@ -28,6 +28,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Guided missile steered by the mouse; auto-aim off with the mouse (pc-features)
+
+- Harry: a guided missile flew straight (WASD and the mouse did nothing); auto-aim locked onto chests.
+- Steering something else, the player's movement update 0xA9CF0 does not turn player 1, so the direct mouse had
+  nothing to drive and the right stick got nothing. After 0xDE720, two frames without 0xA9CF0's turn (and no menu
+  up), the mouse plays the right stick in the controls (style 0's slots 0, 3 x and 4, 5 y, -1 to 1; 20 counts a
+  frame full). Not tried headless (no guided missile in the bot match); the log says "the mouse plays the right stick".
+- Auto-aim: the game's option is the byte at +1 of the player's controls (0x1FE6D1; the options page 0x8D0F0 widget
+  0x1000011B; +2 in the mode 0x260018 flags); its target search 0xB9950 runs with it. While the keyboard and mouse
+  play, 0xB9950 sees both off for the call (the option as set; homing weapons 'P' and 'Q' still lock on).
+- Smoke OK; the bot match's direct mouse unchanged.
+
 ### 2026-10-28 - On-foot keys from the game's own controls page; the weapon wheel; zoomed mouse a quarter (pc-features)
 
 - Harry: the mouse is excellent; zoomed in (sniper, rocket launcher) it wants a quarter the speed; E for action,

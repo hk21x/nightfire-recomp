@@ -10,6 +10,11 @@
 // frame is added to both: so many radians a count at 100% sensitivity, less zoomed in (the camera's field of view
 // over the game's 60 degrees, and a quarter of that again: Harry, aiming the sniper rifle and the rocket launcher).
 // A frame where the game did not write the turn (a cutscene, another state) gets none.
+// Where the player steers something else (a guided missile, a turret: 0xA9CF0 does not write the turn) the mouse plays
+// the right stick in the controls 0xDE720 made (nf::MouseAsStick, from src/game/controls.cpp), 20 counts a frame
+// full deflection. Auto-aim (the game's option, the byte at +1 of the player's controls, +2 in the mode 0x260018
+// flags) is off while the mouse aims: the target search 0xB9950 sees it off for the call, the option stays as set;
+// the homing weapons ('P', 'Q') still lock on.
 // Headless (no mouse): NF_MOUSE_TEST=dx,dy,from,to plays that many counts a frame for frames from..to.
 #include <algorithm>
 #include <chrono>
@@ -32,6 +37,10 @@ constexpr float kGameFov = 1.0471976f;       // the cameras' 60 degrees (0x25190
 constexpr float kZoomedScale = 0.25f;        // zoomed in (a scope, the rocket launcher's sight): a quarter as fast more
 constexpr float kHalfPi = 1.5707964f;          // the pitch is kept over a quarter turn (the camera's is pi/2 times it)
 constexpr uint32_t kUnset = 0x7FC0DEAD;      // a NaN: the turn as it was before the update, if it stays
+constexpr uint32_t kControls = 0x1FE6D0, kControlSize = 0x158;  // per player (0xDE720's)
+constexpr uint32_t kAutoAim = 1, kAutoAimAlt = 2;
+constexpr float kCountsFull = 20;            // counts a frame playing the stick fully
+uint32_t g_direct = 0;                       // frames since 0xA9CF0 last turned player 1 (the mouse aims directly)
 
 float GetF(uint32_t va) {
     float f;
@@ -80,6 +89,7 @@ X86_FUNC(sub_000A9CF0) {
         kernel::W32(actor + kTurn, was);
         return;
     }
+    g_direct = 0;
     float x, y;
     if (!Counts(x, y)) return;
     kernel::G<uint8_t>(actor + kLooked) = 1;  // looking, as 0xB7610 marks the stick's: else the view eases back level
@@ -105,4 +115,40 @@ X86_FUNC(sub_000A9CF0) {
         said = true;
         LOGR("nightfire: the mouse turns and pitches the view directly (%.4f radians a count at 100%%)", kRadiansPerCount);
     }
+}
+
+namespace nf {
+// after 0xDE720 filled the controls: where the mouse does not turn the player itself, it plays the right stick
+// (style 0's: slot 0 and 3 its x, 4 and 5 its y, -1 to 1)
+void MouseAsStick() {
+    if (++g_direct <= 2 || MenuUp()) return;  // 0xA9CF0 turned player 1 a frame ago: the mouse aims directly
+    float x, y;
+    if (!Counts(x, y) || (x == 0 && y == 0)) return;
+    float sx = std::clamp(x / kCountsFull, -1.0f, 1.0f), sy = std::clamp(y / kCountsFull, -1.0f, 1.0f);
+    for (uint32_t slot : {0u, 3u}) SetF(kControls + 0x14 + slot * 4, sx);
+    for (uint32_t slot : {4u, 5u}) SetF(kControls + 0x14 + slot * 4, sy);
+    static bool said = false;
+    if (!said) {
+        said = true;
+        LOGR("nightfire: the mouse plays the right stick (the player steers something else: a guided missile, a turret)");
+    }
+}
+}  // namespace nf
+
+// auto-aim's target search (cdecl: the player's object; its actor at +0xBC, the player index at actor +0x8DE)
+X86_EXTERN_FUNC(__imp__sub_000B9950);
+X86_FUNC(sub_000B9950) {
+    uint32_t obj = kernel::R32(ctx.esp + 4), actor = obj ? kernel::R32(obj + 0xBC) : 0;
+    if (!actor || kernel::G<int8_t>(actor + kPlayerIndex) != 0 || !input::UsingKeyboard())
+        return __imp__sub_000B9950(ctx, base);
+    uint8_t& on = kernel::G<uint8_t>(kControls + kAutoAim), &alt = kernel::G<uint8_t>(kControls + kAutoAimAlt);
+    uint8_t was = on, was_alt = alt;
+    static bool said = false;
+    if ((was || was_alt) && !said) {
+        said = true;
+        LOGR("nightfire: auto-aim off while the mouse aims (the game's option stays as set)");
+    }
+    on = alt = 0;
+    __imp__sub_000B9950(ctx, base);
+    on = was, alt = was_alt;
 }

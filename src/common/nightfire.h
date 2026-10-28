@@ -13,5 +13,6 @@ float Ultrawide();            // how much wider than 16:9 the frame is shown, 1 
 float FovScale();             // fov_percent as a factor, 0.5 to 1.5
 // a menu has the controller (each exe's hooks.cpp): the mouse then plays A, B and the d-pad (MenuMouse)
 bool MenuUp();
-void MenuMouse(int port, input::Pad& p);  // GameInfo::pad  // no EA and MGM logo movies at boot (HideFile)
+void MenuMouse(int port, input::Pad& p);
+void MouseAsStick();  // default.xbe: after its pad reader (src/game/mouse.cpp)  // GameInfo::pad  // no EA and MGM logo movies at boot (HideFile)
 }  // namespace nf
