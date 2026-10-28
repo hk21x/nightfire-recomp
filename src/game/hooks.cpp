@@ -7,7 +7,14 @@
 //     __imp__sub_00012345(ctx, base);  // the original
 // }
 
+#include "common/nightfire.h"
+#include "kernel/kernel.h"
+
 namespace nf {
 // which exe this is (default.xbe): src/common's key layouts and settings tables follow it
 extern const bool kDriving = false;
+
+// Eurocom's menu context for player 1 (0x25F1D0, 0x1D8 bytes a player): +0x1B8 the page shown (0x40000034 at the
+// title, 0x400000xx in the front end and the pause menu), +0x1BC its widget, none in play
+bool MenuUp() { return kernel::R32(0x25F1D0 + 0x1BC) != 0; }
 }
