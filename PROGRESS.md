@@ -30,6 +30,28 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Leaving Paris crashed; the sniper scope black (main; sdk nightfire)
+
+Harry's Windows run reached the end of the first mission, then crashed: an access violation in the heap's free
+(0x110BA6 from RtlFreeHeap) through D3DResource_Release 0x169230 from the game's teardown 0xE8600. Reproduced headless
+by quitting a failed mission to the menu (render thread on or off). gdb on the releases: the object is the host's
+depth buffer (header 0x00050001: one reference, no internal one), and library code at 0x16D23D had dropped the
+device's hold: the frame buffer teardown 0x16D180 inside Driving.xbe's D3DDevice_Reset 0x166230, unnamed, so the
+library's Reset ran on the host's buffers. Named (PGR2's 0x1C38D0 at 0.96): the host Reset runs, and the quit now
+relaunches into default.xbe, which comes up on the main menu. Smoke OK.
+
+Visual: the sniper scope is black (both renderers). Probes and traces at the scope's centre: draw 158 multiplies
+the view by a texture that is near black, the 128x128 target 0x80F07000, a decaying accumulator a black quad dims
+each frame and 16384 points (128 x 128) add to. The points' colour stream is the memory of the other 128x128
+target 0x80F17000, which the pass before drew from the back buffer: the console reads those texels as vertex
+colours; here the GPU's pixels never reached guest memory, the points added zeros and the accumulator stayed black.
+sdk: before a draw each vertex stream's data is read back when the GPU drew it, and the D3D12/D3D11 read-backs
+write 32 bit swizzled targets in Morton order (they skipped every swizzled one). Headless cannot show it (the null
+backend has no GPU targets); wincheck and smoke OK. The icon-atlas frame in Harry's captures runs the same passes.
+Ruled out on the way: linear texture coordinates as 0..1 (experiment: no change, the HUD text broke).
+
+Next: Harry rebuilds and checks the scope, the atlas frame and the end of the mission.
+
 ### 2026-10-28 - Windows: the first mission was black; the gamma ramp (main; sdk nightfire)
 
 Harry's first Windows build (D3D12, RX 7900 XT) boots, plays the movies and the title, relaunches into Driving.xbe
