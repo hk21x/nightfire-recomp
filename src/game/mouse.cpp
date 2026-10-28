@@ -8,7 +8,8 @@
 // pitch at +0x838 (a quarter turn up is 1, the camera's angle pi/2 times it) and marks the frame looked (+0xF0 = 1:
 // otherwise the view eases back level). After 0xA9CF0 for player 1 the mouse's movement since the last
 // frame is added to both: so many radians a count at 100% sensitivity, less zoomed in (the camera's field of view
-// over the game's 60 degrees). A frame where the game did not write the turn (a cutscene, another state) gets none.
+// over the game's 60 degrees, and a quarter of that again: Harry, aiming the sniper rifle and the rocket launcher).
+// A frame where the game did not write the turn (a cutscene, another state) gets none.
 // Headless (no mouse): NF_MOUSE_TEST=dx,dy,from,to plays that many counts a frame for frames from..to.
 #include <algorithm>
 #include <chrono>
@@ -25,9 +26,10 @@
 
 namespace {
 constexpr uint32_t kTurn = 0x28, kPitch = 0x838, kLooked = 0xF0, kPlayerIndex = 0x8DE;
-constexpr uint32_t kCameras = 0x1F661C, kCamFov = 0x104;
+constexpr uint32_t kCameras = 0x1F661C, kCamFov = 0x104, kCamZoom = 0xF4;  // the angle, a zoom divisor (0xDD950)
 constexpr float kRadiansPerCount = 0.0008f;  // at 100% sensitivity: 36 degrees an inch at 800 counts an inch
 constexpr float kGameFov = 1.0471976f;       // the cameras' 60 degrees (0x25190's callers)
+constexpr float kZoomedScale = 0.25f;        // zoomed in (a scope, the rocket launcher's sight): a quarter as fast more
 constexpr float kHalfPi = 1.5707964f;          // the pitch is kept over a quarter turn (the camera's is pi/2 times it)
 constexpr uint32_t kUnset = 0x7FC0DEAD;      // a NaN: the turn as it was before the update, if it stays
 
@@ -83,8 +85,19 @@ X86_FUNC(sub_000A9CF0) {
     kernel::G<uint8_t>(actor + kLooked) = 1;  // looking, as 0xB7610 marks the stick's: else the view eases back level
     if (x == 0 && y == 0) return;
     uint32_t cam = kernel::R32(kCameras);
-    float zoom = cam ? std::clamp(GetF(cam + kCamFov) / kGameFov, 0.05f, 2.0f) : 1.0f;
-    float k = kRadiansPerCount * zoom;
+    float zoom = 1.0f;
+    if (cam) {
+        float divisor = GetF(cam + kCamZoom);
+        zoom = std::clamp(GetF(cam + kCamFov) / (divisor > 0.01f ? divisor : 1.0f) / kGameFov, 0.02f, 2.0f);
+    }
+    bool zoomed = zoom < 0.9f;
+    static bool was_zoomed = false;
+    if (zoomed != was_zoomed) {
+        was_zoomed = zoomed;
+        LOGR("nightfire: %s (field of view %.2f of the game's 60 degrees)",
+             zoomed ? "zoomed in: the mouse slows" : "zoomed out", zoom);
+    }
+    float k = kRadiansPerCount * std::min(zoom, 1.0f) * (zoomed ? kZoomedScale : 1.0f);
     SetF(actor + kTurn, GetF(actor + kTurn) - x * k);
     SetF(actor + kPitch, std::clamp(GetF(actor + kPitch) + y * k / kHalfPi, -1.0f, 1.0f));
     static bool said = false;

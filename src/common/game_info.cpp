@@ -68,7 +68,10 @@ bool HideFile(const std::string& path) {
 constexpr uint16_t kMouseLeft = 0x01, kMouseRight = 0x02, kMouseMiddle = 0x04, kTab = 0x09, kEnter = 0x0D,
                    kEscape = 0x1B, kSpace = 0x20, kArrowLeft = 0x25, kArrowUp = 0x26, kArrowRight = 0x27, kArrowDown = 0x28,
                    kLeftShift = 0xA0, kLeftCtrl = 0xA2, kBackspace = 0x08;
-// on foot (default.xbe): a shooter's layout, the mouse looks and aims (GameInfo::mouse_look)
+// on foot (default.xbe): a PC shooter's layout for the game's NightFire controller style (the keyboard plays as it:
+// src/game/controls.cpp), as its controls page lists it: A crouch, X reload/action, Y jump, B next weapon, White alt.
+// fire, Black next gadget, L manual aim, R fire, Back vision mode, the d-pad's left and right cycle the weapon (the
+// mouse wheel too: src/common/menu_mouse.cpp), up and down the gadget and the zoom; the mouse looks and aims
 std::array<uint16_t, 2> ShooterKeys(int c) {
     using namespace input;
     switch (c) {
@@ -77,21 +80,19 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kLSLeft: return {'A', 0};
         case kLSRight: return {'D', 0};
         case kRT: return {kMouseLeft, 0};    // fire
-        case kLT: return {kMouseRight, 0};   // aim
-        case kA: return {kSpace, kEnter};    // select in the menus
-        case kB: return {kLeftCtrl, kBackspace};
-        case kX: return {'R', 0};
-        case kY: return {'E', 0};
-        case kBlack: return {'F', 0};
-        case kWhite: return {'Q', 0};
-        case kUp: return {kArrowUp, '1'};    // the d-pad: weapons, gadgets and the menus
+        case kLT: return {kMouseRight, 0};   // manual aim
+        case kA: return {'C', kLeftCtrl};    // crouch (Enter selects in the menus: menu_mouse.cpp)
+        case kX: return {'E', 'R'};          // action, reload
+        case kY: return {kSpace, 0};         // jump
+        case kB: return {'Q', kBackspace};   // next weapon; back in the menus
+        case kWhite: return {kMouseMiddle, 'F'};  // alt. fire
+        case kBlack: return {'G', 0};        // next gadget
+        case kBack: return {'V', kTab};      // vision mode
+        case kUp: return {kArrowUp, '1'};    // the d-pad: gadget and zoom up and down, the weapon left and right
         case kDown: return {kArrowDown, '2'};
         case kLeft: return {kArrowLeft, '3'};
         case kRight: return {kArrowRight, '4'};
         case kStart: return {kEscape, 'P'};
-        case kBack: return {kTab, 0};
-        case kLThumb: return {'C', kLeftShift};
-        case kRThumb: return {kMouseMiddle, 'V'};
         default: return {0, 0};
     }
 }

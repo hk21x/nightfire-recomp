@@ -28,6 +28,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - On-foot keys from the game's own controls page; the weapon wheel; zoomed mouse a quarter (pc-features)
+
+- Harry: the mouse is excellent; zoomed in (sniper, rocket launcher) it wants a quarter the speed; E for action,
+  C or Ctrl crouch, the wheel for weapons, R reload.
+- The game's controls page (pause, CONTROLS tab, headless in the bot match) for every style; the style number is
+  player +0xE (Classic Bond 7, GoldenEye 6, Thunderball 5, Dr. No 4, Goldfinger 3, Octopussy 2, Moonraker 1,
+  NightFire 0). NightFire (the keyboard's): A crouch, X reload/action, Y jump, B next weapon, White alt. fire, Black
+  next gadget, L manual aim, R fire, Back vision mode, d-pad left/right cycle weapon, up/down gadget/zoom. The old
+  keys were from a guess (Space was crouch, E jump).
+- Keys: C/Ctrl crouch, E/R action and reload, Space jump, Q/Backspace next weapon, middle button/F alt. fire, G next
+  gadget, V/Tab vision mode, arrows/1-4 the d-pad; the wheel cycles the weapon in play (down the next), Enter selects
+  in the menus (menu_mouse.cpp).
+- Mouse zoomed in (the camera's angle over its zoom divisor under 0.9 of 60 degrees): a quarter again; the log says
+  "zoomed in" and "zoomed out" so Harry's log shows the test works.
+- Headless (KEYS, MOUSER, WHEELD in the bot match): the style override (7 -> 0) and the direct mouse logged. Smoke OK.
+
 ### 2026-10-28 - The mouse turns the view itself on foot; on-foot play headless; the snow (pc-features)
 
 - Harry: the mouse as the right stick is no FPS mouse (dead spots, a ramp). default.xbe takes the mouse itself now
