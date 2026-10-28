@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <array>
 #include <cctype>
 #include <cstdlib>
@@ -14,12 +15,39 @@
 
 namespace nf {
 bool skip_intro = false;
+uint32_t fov_percent = 100;
+
+float Ultrawide() {
+    static const float forced = [] {  // NF_ULTRAWIDE=k headless (no settings or screen): the 3D k times wider
+        const char* e = std::getenv("NF_ULTRAWIDE");
+        return e && *e ? float(std::atof(e)) : 0.0f;
+    }();
+    if (!app::Widescreen()) return 1.0f;
+    float k = forced > 0 ? forced : std::max(app::FrameAspect(), 16.0f / 9.0f) / (16.0f / 9.0f);
+    static bool said = false;
+    if (k > 1.0f + 1e-3f && !said) {
+        said = true;
+        LOGR("nightfire: 3D views widened %.3f times for the %.3f:1 frame", k, app::FrameAspect());
+    }
+    return k;
+}
+
+float FovScale() {
+    uint32_t pct = std::clamp<uint32_t>(fov_percent, 50, 150);
+    static uint32_t said = 100;
+    if (said != pct) {
+        said = pct;
+        LOGR("nightfire: field of view %u%% of the game's", pct);
+    }
+    return float(pct) / 100;
+}
 }  // namespace nf
 
 namespace {
 // after the settings load: the harness's environment overrides them; each setting in effect is logged
 void Init() {
     if (const char* e = std::getenv("NF_SKIP_INTRO"); e && *e) nf::skip_intro = *e == '1';
+    if (const char* e = std::getenv("NF_FOV"); e && *e) nf::fov_percent = uint32_t(std::atoi(e));
     if (nf::skip_intro) LOGR("nightfire: the intro logos are skipped (skip_intro)");
 }
 
@@ -150,7 +178,9 @@ const app::GameInfo app::kGame = {
     .images = {{"default.xbe", "Nightfire"}, {"driving.xbe", "NightfireDriving"}},
                                           // each recompiled xbe and its exe, for title launches
     .options = {{"skip_intro", &nf::skip_intro, nullptr, "Skip intro movies",
-                 "Starts without the EA and MGM logo movies"}},
+                 "Starts without the EA and MGM logo movies"},
+                {"fov_percent", nullptr, &nf::fov_percent, "Field of view (%)",
+                 "50 to 150; 100 is the game's. On foot, driving and in the engine's cutscenes; the scope zooms in proportion."}},
     .load = LoadKeys,                     // Driving.xbe's keys apart (DrivingKeys)
     .save = SaveKeys,
     .init = Init,                         // after the settings load, before the window and boot
@@ -160,6 +190,7 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = nf::MenuMouse,                 // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
+    .squeeze_screen_programs = true,      // ultrawide: Driving.xbe draws its HUD and menus through vertex programs
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
     .hide_file = HideFile,                // skip_intro

@@ -12,6 +12,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Push buffers: none
 - SDK: the fork's main at 41ac590 (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
+- PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
+  2D, ultrawide and field of view; to be tried on Windows
 - Smoke: scripts/smoke.sh, title -> START -> Driving.xbe's Paris mission, about 4 minutes
 
 ## Disc
@@ -25,6 +27,32 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-28 - PC Settings in the main menu, menu mouse, sharp 2D, ultrawide and field of view (pc-features)
+
+- PC Settings: a fourth main-menu item under NightFire / Multiplayer / Codenames, in the game's own font and focus
+  (src/game/pc_settings_item.cpp). Eurocom's menus are a record stream ([0x25FB08]) the page builder 0x93960 reads:
+  the builder gets a copy with the Codenames item's records cloned under our id (0x1000FC01) and label, the items moved
+  up a row; A on it (dispatcher 0x8E320, message 0x4B) opens the overlay; its help line is set after 0x959E0.
+  Headless: shown, focused with its help line, A logs "PC Settings opened from the main menu".
+- Mouse in the menus (EoN's MenuMouse): left A, right B, the wheel the d-pad while a menu is up. default.xbe tells
+  by Eurocom's menu context (player 1's page widget, 0x25F38C); Driving.xbe's EA menus are not found yet (never up).
+- sharpen_2d on (text and HUD sharp at high resolutions; the overlay's sharp_2d turns it off).
+- Ultrawide and fov_percent (50-150, both exes; .local/fov_re.md has the reverse engineering):
+  - default.xbe (src/game/view.cpp): the D3D projection 0xDD950 and the culling planes 0xDB5C0 get the camera's
+    aspect (+0x100) times the frame's width over 16:9 and its angle (+0x104) scaled, for the call alone (the scope's
+    zoom and a cutscene camera read those fields back); 0x25190's pixel scales (+0xEC/+0xF0: HUD markers, aim ray)
+    follow the field of view, not ultrawide (the HUD is squeezed). Not run headless: no on-foot level is reached
+    (the Paris pad ends at "Mission Failed").
+  - Driving.xbe (src/driving/view.cpp): 0xE46D0's horizontal angle widened in tangent and its aspect with it (the
+    height unchanged); the field of view scales the game's multiplier [[0x1EBFF4]+0x58] around 0x96EB0 and the HUD
+    markers 0xCE2B0. Headless Paris: NF_FOV=130 shows more of the scene; NF_ULTRAWIDE=2 (a headless override) gives a
+    picture half as wide at the same height, as a 32:9 screen stretches it back. squeeze_screen_programs on: every
+    driving draw is a vertex program, the HUD's 640x480 quads too.
+- Smoke OK (147 draws a frame).
+- Next: Harry on Windows: PC Settings from the main menu, the menus with the mouse, the layout against the game's
+  control labels, aspect = fill at 21:9 or 32:9 (edge pop-in, the HUD squeezed, aim at the edges on foot:
+  0xB7EB0 keeps 16:9), the field of view; the log should say "out of the menus" in play.
 
 ### 2026-10-28 - PC features begun: skip intro, mouse look, keyboard layouts (pc-features)
 

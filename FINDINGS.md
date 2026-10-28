@@ -36,3 +36,14 @@ game's own code and data, with its addresses).
 ## Push buffers
 - **[game]** None: no push buffer function is linked in either xbe's D3D and game code never touches the push
   pointer; it writes D3D's shadow state directly (D3D_DirtyFlags, deferred texture state), as the inline setters do.
+
+## Menus and views
+- **[game]** Eurocom's menus (default.xbe) are data: a record stream at [0x25FB08] (page F0, widget F9, attribute F6;
+  .local/menu_re.md), built by 0x93960 page by page; messages per widget id through 0x8E320 (0x4B = A), help lines
+  from 0x959E0. The menu context 0x25F1D0 (+0x1D8 a player) holds the page up (+0x1B8 id, +0x1BC widget, 0 in play).
+- **[game]** default.xbe's cameras (0x1F661C, 0-3 players, 4 scripted): 0x25190 sets the vertical angle (radians,
+  +0x104), aspect (+0x100: 4:3 or 16:9 by 0x1F6610) and pixel scales (+0xEC/+0xF0); the projection (0xDD950) and the
+  culling planes (0xDB5C0) read +0x100/+0x104. The scope zoom adds to +0x104 itself.
+- **[game]** Driving.xbe's views: 0xE46D0 (thiscall: horizontal angle in degrees, aspect, near, far; EoN's 0x2111E0
+  in x87), called only from 0x96EB0: angle = camera +0xB4 * 2 * [[0x1EBFF4]+0x58], times 1.25 and 16:9 with the
+  widescreen byte [[0x1EBFF4]+0x4C]. Nothing culls by the view's sides (no EoN-style global frustum).
