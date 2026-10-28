@@ -30,6 +30,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - default.xbe trapped at 0x11234A: an instruction past the raw data (main; sdk nightfire)
+
+Harry's next run (with his saves, so default.xbe stays in its menus) trapped after 39 s: "undecodable instruction"
+at 0x11234A, from the game's 0xE83A8 (D3DX 0x111FC0, a matrix inverse). The D3DX section's raw data ends at
+0x11234C, its virtual size at 0x112350: the function's last instruction, ret 0xC (C2 0C 00), has its last byte in
+the zero filled tail the loader maps. sdk xbe_recomp: Decode pads with the tail's zeros, and an instruction that
+starts in code may run into its own section's tail. Forza's FZFULLUI had the same trap (0x3A9AEA); PGR2, PGR1 and
+EoN had none, so their code does not change. Smoke OK.
+
 ### 2026-10-28 - Menu panels: Driving.xbe's SetPalette (main; sdk nightfire)
 
 Harry's rebuild: no crash; the scope shows the view inside it now (dim) but not yet as it should, and the menu
