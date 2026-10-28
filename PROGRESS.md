@@ -28,6 +28,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Driving.xbe trap in the car mission (pc-features)
+
+- Harry (Windows, "Enemies Vanquished", 117 s in): "indirect call to 00081D10 has no recompiled function" from
+  0x8783F: a state's update (+0x14 of the 0x18-byte entries at [0x1EC368], stored by 0x78770 at 0x79405), reached
+  only through that table. Added to config/driving.toml [functions]. A sweep of both xbes' code for function
+  addresses stored as immediates (mov [reg+d], imm; push imm) with no recompiled function found no other.
+- Headless with Harry's save (.local/hdd_harry, from his hdd.zip; codename BOND): default.xbe's NightFire item ->
+  mission list -> Enemies Vanquished wrote .local/launch_enemies_vanquished.bin; 5 minutes of driving with the gas
+  held (to a wreck and "Mission Failed"): no trap.
+- The car's own controls page (pause, CONTROLS): A fire, B handbrake, Y camera, X gadget, d-pad left/right cycle
+  weapons, left stick steer, L brake/reverse, R gas, Black/White weapon forward/back, right stick look back.
+- Next: Driving.xbe's controls for the keyboard and mouse (the mounted gun's aim, auto-aim, car vs gun layout, the
+  menus): being reverse-engineered (.local/driving_input_re.md).
+
 ### 2026-10-28 - Guided missile steered by the mouse; auto-aim off with the mouse (pc-features)
 
 - Harry: a guided missile flew straight (WASD and the mouse did nothing); auto-aim locked onto chests.

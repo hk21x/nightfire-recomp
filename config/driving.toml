@@ -32,5 +32,7 @@ XPP_GamepadType         = 0x183AEC  # XDEVICE_TYPE_GAMEPAD: the game passes it t
                                     # 0x2C into XPP, as default.xbe's 0x15722C
 
 [functions]
+0x81D10 = "VehicleState_81D10"  # a state's update (+0x14 of the 0x18-byte entries at [0x1EC368], set by 0x78770 at 0x79405),
+                                # called through the table at 0x8783F: no decode reached it (Harry's third mission trapped)
 0x183BF4 = "XPP_DeviceTypeInit_183BF4"  # the first two XPP device types' init (descriptors 0x183B98, 0x183BB0 at +4), called
                                         # through the table 0x183AD4..0x183AE0 by XInitDevices 0x183DFD; no decode reached it
