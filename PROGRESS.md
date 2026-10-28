@@ -28,6 +28,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - The mouse past the game's stick dead zone (pc-features)
+
+- Harry: dead spots in the mouse movement. default.xbe's poll 0xE76A0 makes each stick axis a float, -100 to 100
+  (0x1620E0), takes a dead zone off it and stretches the rest (0xE79CF..); slow mouse moves fell inside it. While
+  the keyboard and mouse play, controller 1's right stick floats are remade after the poll from the XInputGetState
+  shorts, linear, the runtime's 20% mouse start taken off (src/game/controls.cpp). Sensitivity: the overlay's
+  mouse sensitivity (10-1000%); the game's top turn rate stays its own.
+- Smoke OK. Next: Harry: slow aiming, and the snow captures (F3).
+
 ### 2026-10-28 - Keyboard and mouse always as the NightFire controller style (pc-features)
 
 - Harry (Windows): the field of view works; on foot the mouse strafed and moved Bond about, and A/D did not strafe.
