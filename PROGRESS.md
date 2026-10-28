@@ -10,8 +10,9 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   112 (4 of them Driving.xbe's own, by hand); layout proven from NightFire's code (5659 behaviour, own offsets)
 - Push buffers: none (no push buffer function linked, game code never touches the push pointer)
 - Region: PAL (GameInfo::pal_console); the launch data carries the video standard into Driving.xbe
-- SDK: task branch `nightfire` (pushed). PGR1's smoke passes on it (2026-10-28, with the smoke change); PGR2, EoN
-  and PGR1's frame check still to run before fork main
+- SDK: task branch `nightfire` (pushed; the build takes it from there). On it: PGR1 and PGR2 smoke OK (2026-10-28).
+  EoN's smoke fails the same with and without it, in EoN's own tree at its own SDK (stuck on the intro movie
+  in1_palw.xmv): not merged into fork main until EoN's gate works again; PGR1's frame check then too
 - GitHub: remote origin git@github.com:hk21x/nightfire-recomp.git set; the private repository is to be made by Harry
 - Smoke: scripts/smoke.sh: SMOKE OK (2026-10-28): title, START, relaunch, Driving.xbe's Paris mission (146 draws a
   frame at the end), about 4 minutes; it fails without START (no relaunch)
@@ -28,6 +29,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-28 - Ready for a first Windows build (main; sdk nightfire)
+
+- Gate on the branch: PGR2 smoke OK (2009 draws a frame), PGR1 smoke OK. EoN smoke fails at 1 draw a frame (the
+  intro movie in1_palw.xmv never ends) on fork main's SDK, on its own pinned SDK 9e5900b and merged with this branch
+  alike, in /home/harry/eon-soak and in EoN's own tree: an EoN problem of its own, so fork main is not moved yet.
+- Windows checks: scripts/wincheck.sh clean; scripts/shadercheck.sh compiles all 41 shaders the two xbes made (4 in
+  default.xbe's boot, 37 in the Paris level), 0 failed.
+- build.bat is EoN's (both exes); the sdk submodule is the pushed nightfire branch's commit, so a clone builds
+  without fork main. The launcher builds from fork main and cannot build this game until the merge.
 
 ### 2026-10-28 - Pad scripts and a smoke test across the two xbes (main; sdk nightfire)
 
