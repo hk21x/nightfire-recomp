@@ -30,6 +30,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Windows: the first mission was black; the gamma ramp (main; sdk nightfire)
+
+Harry's first Windows build (D3D12, RX 7900 XT) boots, plays the movies and the title, relaunches into Driving.xbe
+and then shows black in the first mission. His F3 capture (.local/win) has the frame drawn right (final.bmp: the
+van's sniper view), so the picture was lost after the draws. The device's gamma ramps in his memory dump are zeros,
+and the game's own base ramp at 0x23FC08 too: Driving.xbe reads the current ramp once with the library's
+D3DDevice_GetGammaRamp 0x165E70 (copies [device + 0x259C + slot * 0x300]) and every fade is that ramp scaled
+(0xE7740: base * scale + 0.5, then SetGammaRamp). The host never put a ramp in the device: its SetGammaRamp goes to
+the GPU only, and the console's linear ramp was never there, so every fade was black. The reference renderer has no
+gamma, so headless never showed it. sdk: CreateDevice writes the linear ramp into both slots and SetGammaRamp keeps
+them current. Headless the saved base is now linear (0, 32 ... 224); smoke OK.
+
+Next: Harry rebuilds (build.bat updates the sdk) and checks the mission shows.
+
 ### 2026-10-28 - Ready for a first Windows build (main; sdk nightfire)
 
 - Gate on the branch: PGR2 smoke OK (2009 draws a frame), PGR1 smoke OK. EoN smoke fails at 1 draw a frame (the

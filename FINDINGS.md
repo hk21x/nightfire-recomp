@@ -29,6 +29,10 @@ game's own code and data, with its addresses).
 - **[console]** A title can fill the console's 64 MB to the last 100 KB (Driving.xbe's Paris level): the host's own
   buffers live past it (mem::AllocHostContiguous), never in the title's memory.
 
+- **[console]** The device holds the current gamma ramp (CDevice_GammaRamps, two slots) and a console starts with a
+  linear one: titles read it back with GetGammaRamp (Driving.xbe 0x165E70) as the base of their fades.
+- **[game]** Driving.xbe's fades scale the ramp saved at 0x23FC08 (0xE7740, per channel base * scale + 0.5).
+
 ## Push buffers
 - **[game]** None: no push buffer function is linked in either xbe's D3D and game code never touches the push
   pointer; it writes D3D's shadow state directly (D3D_DirtyFlags, deferred texture state), as the inline setters do.
