@@ -28,6 +28,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Keyboard and mouse always as the NightFire controller style (pc-features)
+
+- Harry (Windows): the field of view works; on foot the mouse strafed and moved Bond about, and A/D did not strafe.
+- default.xbe's 0xDE720 reads the pads into each player's controls by the player's controller style (u16 at +0xE of
+  a 0x158-byte player, port byte at +0x156): style 0 (NightFire) takes moving and strafing from the left stick,
+  turning and looking from the right; 2 and 5 (Octopussy, Thunderball by the options' order) swap the x axes. The
+  keys and mouse are laid out for style 0, so while controller 1 is on the keyboard and mouse its player is read as
+  style 0 for the call (src/game/controls.cpp; the chosen style is logged); a controller keeps its style.
+- Smoke OK. Next: Harry on Windows: WASD moves and strafes, the mouse turns and looks, in his save's style.
+
 ### 2026-10-28 - PC Settings in the main menu, menu mouse, sharp 2D, ultrawide and field of view (pc-features)
 
 - PC Settings: a fourth main-menu item under NightFire / Multiplayer / Codenames, in the game's own font and focus
