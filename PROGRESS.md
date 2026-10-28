@@ -28,6 +28,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - PC controls in Driving.xbe: the mounted guns, the car, the menus (pc-features)
+
+- Harry: the on-foot controls did not reach the vehicle missions (Alpine Escape's snowmobile turret, the Paris van's
+  gun, the car). Reverse engineering in .local/driving_input_re.md (angles in turns; the control files are text in
+  driving/misc.viv: data\control\povcfg0-7.def for the guns, drivecfg.def for the car).
+- Mounted guns (src/driving/mouse.cpp): the gun camera's update 0x857D0 (fastcall) adds the stick's rates to +0x1EC
+  yaw and +0x1E8 pitch (up a smaller pitch) and clamps them (0x83190). The mouse's counts go into both before the
+  call, the stick's part (+0x290/+0x294, +0x2A0/+0x2A4, ramp +0x1F0/+0x1F4) zeroed; slower zoomed (+0xB4 over 33
+  degrees) and a quarter again. Auto-aim [0x2445D0] (default.xbe's option through the launch data, read only by
+  0x82E00 from 0x857D0) is off for the call and its lock let go. Headless Alpine Escape with MOUSER: the turret turns.
+- Car or gun: the control map's mode [0x1E4560] (1 gun, 0 car), the gun's style [0x1E4568] (nf::GunStyle). On a gun
+  the keyboard's car buttons are taken off: the left button fires (RT), the right zooms (LT), R reloads (X in style 0,
+  else A); the wheel cycles weapons (its style's controls). In the car: the keys from its controls page (W gas, S
+  brake, A/D steer, mouse left fire, Space handbrake, E/mouse right gadget, C camera, Q/Z weapons, V look back), the
+  wheel Black/White.
+- Menus: the HUD's byte [[0x23F44C]+0x2B0] while an in-game menu takes input (nf::MenuUp): the mouse in Paused and
+  Mission Failed. Headless Paris: pause and resume logged.
+- mouse_direct in both exes now (NF_DRIVING_EXE dropped). Smoke OK.
+
 ### 2026-10-28 - Driving.xbe trap in the car mission (pc-features)
 
 - Harry (Windows, "Enemies Vanquished", 117 s in): "indirect call to 00081D10 has no recompiled function" from

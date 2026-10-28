@@ -96,27 +96,30 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         default: return {0, 0};
     }
 }
-// driving (Driving.xbe): RT accelerates, A brakes and reverses (the Paris chase)
+// driving (Driving.xbe), the car's controls page (Driving Config): R gas, L brake/reverse, the left stick steers, A
+// fire, B handbrake, Y camera, X gadget, the d-pad's left and right and Black/White cycle the weapon (the mouse wheel
+// too), the right stick's click looks back. On a mounted gun (Paris, Alpine Escape) the mouse aims, its buttons fire
+// and zoom and R reloads instead (src/common/menu_mouse.cpp, src/driving/mouse.cpp)
 std::array<uint16_t, 2> DrivingKeys(int c) {
     using namespace input;
     switch (c) {
-        case kRT: return {'W', 0};                   // accelerate
-        case kA: return {'S', kEnter};               // brake, reverse; select in the menus
+        case kRT: return {'W', 0};                   // gas
+        case kLT: return {'S', 0};                   // brake, reverse
         case kLSLeft: return {'A', kArrowLeft};      // steer
         case kLSRight: return {'D', kArrowRight};
         case kLSUp: return {kArrowUp, 0};            // the menus
         case kLSDown: return {kArrowDown, 0};
-        case kLT: return {kMouseLeft, 0};
+        case kA: return {kMouseLeft, kEnter};        // fire; select in the menus
+        case kB: return {kSpace, kBackspace};        // handbrake; back in the menus
         case kX: return {kMouseRight, 'E'};          // the gadget
-        case kB: return {kSpace, kBackspace};        // back in the menus
-        case kY: return {'F', 0};
-        case kBlack: return {'R', 0};
-        case kWhite: return {'Q', 0};
-        case kRThumb: return {'V', kMouseMiddle};
-        case kUp: return {'1', 0};
-        case kDown: return {'2', 0};
-        case kLeft: return {'3', 0};
-        case kRight: return {'4', 0};
+        case kY: return {'C', 0};                    // the camera
+        case kBlack: return {'Q', 0};                // the next weapon
+        case kWhite: return {'Z', 0};                // the weapon before
+        case kRThumb: return {'V', kMouseMiddle};    // look back
+        case kLeft: return {'1', 0};                 // the d-pad: the weapon
+        case kRight: return {'2', 0};
+        case kUp: return {'3', 0};
+        case kDown: return {'4', 0};
         case kStart: return {kEscape, 'P'};
         case kBack: return {kTab, 0};
         default: return {0, 0};
@@ -196,9 +199,8 @@ const app::GameInfo app::kGame = {
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse looks and aims
-#ifndef NF_DRIVING_EXE
-    .mouse_direct = true,                 // on foot it turns the view itself (src/game/mouse.cpp)
-#endif
+    .mouse_direct = true,                 // the view and the mounted guns turn by it directly (src/game/mouse.cpp,
+                                          // src/driving/mouse.cpp), not as the right stick
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)

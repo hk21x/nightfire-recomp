@@ -49,7 +49,6 @@ if(NOT DRIVING_PARTITIONS)
     set(DRIVING_PARTITIONS 8)
 endif()
 add_xbe_image(NightfireDriving Driving.xbe driving.toml ${DRIVING_PARTITIONS} driving)
-target_compile_definitions(NightfireDriving PRIVATE NF_DRIVING_EXE=1)  # src/common built for this exe (game_info.cpp)
 
 # launcher/icon.ico, when there is one: the game's icon too (resource 1, which the window class loads)
 if(WIN32 AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/launcher/icon.ico)

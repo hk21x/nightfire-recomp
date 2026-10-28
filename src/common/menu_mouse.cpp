@@ -1,8 +1,9 @@
 // The mouse in the menus: the wheel scrolls (d-pad up and down), the left button selects (A), the right goes back
 // (B), and Enter selects too (A's keys are crouch's in play). While a menu is up (nf::MenuUp, each exe's own test),
 // the mouse's buttons stop playing what they are bound to in play (fire, aim) and play A and B instead; each notch of
-// the wheel is a press of the d-pad (EoN's way). On foot in play each notch cycles the weapon instead (the d-pad's
-// right a notch down, left a notch up: the NightFire style's Cycle Weapon).
+// the wheel is a press of the d-pad (EoN's way). In play each notch cycles the weapon instead: on foot the d-pad's
+// right a notch down and left a notch up (the NightFire style's Cycle Weapon), in the car Black and White, on a
+// mounted gun its style's; there the mouse's buttons fire and zoom too (GunStyle).
 #include <algorithm>
 #include <chrono>
 #include <cstdint>
@@ -25,12 +26,19 @@
 
 namespace nf {
 namespace {
-bool EnterHeld() {
+bool KeyHeld(int vk) {
 #ifdef _WIN32
-    return GetForegroundWindow() == static_cast<HWND>(app::Window()) && (GetAsyncKeyState(VK_RETURN) & 0x8000);
+    return GetForegroundWindow() == static_cast<HWND>(app::Window()) && (GetAsyncKeyState(vk) & 0x8000);
 #else
+    (void)vk;
     return false;
 #endif
+}
+
+// a press of control c (a d-pad bit or an analog button)
+void Press(input::Pad& p, int c) {
+    if (c < input::kA) p.buttons |= uint16_t(1u << c);
+    else p.analog[c - input::kA] = 255;
 }
 }  // namespace
 
@@ -49,14 +57,25 @@ void MenuMouse(int port, input::Pad& p) {
     static bool was = false;
     if (menu != was) LOGR("nightfire: %s", menu ? "a menu is up: the mouse plays A, B and the d-pad" : "out of the menus");
     was = menu;
-    if (!menu && kDriving) {
-        pending = 0;
-        return;
+    // the wheel's two controls: the menus scroll, on foot the d-pad cycles the weapon (down the next), in the car Black
+    // and White, on a mounted gun its style's (data\\control\\povcfgN.def: White/Black in 4, the d-pad's up and down
+    // in 6 and 7, else its left and right)
+    int gun = kDriving ? GunStyle() : -1;
+    int next = input::kRight, prev = input::kLeft;
+    if (menu) next = input::kDown, prev = input::kUp;
+    else if (gun == 4) next = input::kBlack, prev = input::kWhite;
+    else if (gun == 6 || gun == 7) next = input::kDown, prev = input::kUp;
+    else if (kDriving && gun < 0) next = input::kBlack, prev = input::kWhite;
+    // on a mounted gun the car's buttons do not apply: the left button fires (RT), the right zooms (LT), R reloads (X
+    // in style 0, else A)
+    if (gun >= 0 && input::UsingKeyboard()) {
+        for (int c : {input::kA, input::kX, input::kLT, input::kRT}) p.analog[c - input::kA] = 0;
+        if (held & 1) Press(p, input::kRT);
+        if (held & 2) Press(p, input::kLT);
+        if (KeyHeld('R')) Press(p, gun == 0 ? input::kX : input::kA);
     }
-    // on foot in play: a notch cycles the weapon (down the next)
-    int next = menu ? input::kDown : input::kRight, prev = menu ? input::kUp : input::kLeft;
     if (menu) {
-        if (EnterHeld()) p.analog[0] = 255;  // A
+        if (KeyHeld(0x0D)) p.analog[0] = 255;  // Enter: A
         // the buttons out of what they play in play
         for (int c = 0; c < input::kA + 8; c++) {
             auto keys = input::ControlKeys(c);
@@ -78,7 +97,7 @@ void MenuMouse(int port, input::Pad& p) {
     if (pending) {
         int64_t t = now - pulse;
         if (t < kPress) {
-            p.buttons |= uint16_t(1u << (pending > 0 ? prev : next));
+            Press(p, pending > 0 ? prev : next);
         } else if (t >= kPress + kGap) {
             pending += pending > 0 ? -1 : 1;
             pulse = now;
