@@ -30,6 +30,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - Menu panels: Driving.xbe's SetPalette (main; sdk nightfire)
+
+Harry's rebuild: no crash; the scope shows the view inside it now (dim) but not yet as it should, and the menu
+panels (Paused, Mission Failed) were black and white noise, also headless. Their textures are P8 (format 0x0B).
+0x1669E0 stores a palette in the device's slot [+0xB48 + stage * 4] and pushes 0x41B20 + stage * 0x40 itself (EoN's
+QFE 4 SetPalette does the same): D3DDevice_SetPalette, unnamed, so the host never had a palette (and logged
+"MakeSpace from 00166A4E"). Named: the Mission Failed panel draws right headless. Smoke OK.
+
+Next: the scope on Windows after this build (the readback of 2026-10-28 made the view show; brightness and the
+noise pattern still to compare with the console).
+
 ### 2026-10-28 - Leaving Paris crashed; the sniper scope black (main; sdk nightfire)
 
 Harry's Windows run reached the end of the first mission, then crashed: an access violation in the heap's free
