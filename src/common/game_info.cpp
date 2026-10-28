@@ -160,6 +160,7 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = nf::MenuMouse,                 // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
+    .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse plays the right stick: looks and aims on foot
