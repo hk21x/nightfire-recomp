@@ -26,6 +26,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - PC features begun: skip intro, mouse look, keyboard layouts (pc-features)
+
+- skip_intro (settings, NF_SKIP_INTRO=1 headless): default.xbe's EA (25_fps/07370048.xmv) and MGM (07380048) logo
+  movies reported missing through GameInfo::hide_file; the game passes over them and "Press START" is up at 15 s
+  instead of 26 s; the language select (07350048, its background) stays.
+- Mouse look: GameInfo::mouse_look (the mouse plays the right stick, both exes). Keyboard layouts per exe as EoN's
+  (kDriving in each hooks.cpp; Driving.xbe's rebinds kept as [driving_keys]): on foot WASD, mouse fire/aim, Space,
+  Ctrl, R, E, F, Q, 1-4 the d-pad, Esc/P start, Tab back; driving W accelerate (RT), S brake/reverse (A), A/D steer.
+  The game's own control labels (text bank 0): Fire, Jump, Alt. Fire, Crouch, Reload/Action, Look/Strafe, Vision
+  Mode, Cycle Weapon, Cycle Gadget/Zoom, Manual Aim, Next Weapon/Gadget, Pause: the layout is to be checked against
+  them in game.
+- The main menu's text: GetText 0x6D460 (handle = bank << 24 | n, bank bases at [[0x1FEC78] + bank * 4], the
+  table at [0x215588]); main menu handles 0x148 NightFire, 0x149 Multiplayer, 0x14A Options (not shown: a hidden
+  item), 0x14B Codenames. The menu itself is data-driven; its items are being traced (.local/menu_re.md), as are
+  the projection and culling of both engines for ultrawide and FOV (.local/fov_re.md).
+
 ### 2026-10-28 - The SDK branch in fork main (main; sdk 41ac590)
 
 EoN's smoke had not failed: its default length is 240 s and 150 s ends inside its intro movie (EoN's session; the
