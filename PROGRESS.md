@@ -3,20 +3,16 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Milestone: 2 - gameplay headless. default.xbe: language select, the XMV intro movies, the title; START hands over to
-  Driving.xbe (EA's front end and driving levels), which plays the Paris intro movie and the Paris mission (Bond
-  sniping from the van; with no input the mission fails to its menu): 200 s, 8280 frames, no traps
-- XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions (the rest not linked), Driving.xbe
-  112 (4 of them Driving.xbe's own, by hand); layout proven from NightFire's code (5659 behaviour, own offsets)
-- Push buffers: none (no push buffer function linked, game code never touches the push pointer)
-- Region: PAL (GameInfo::pal_console); the launch data carries the video standard into Driving.xbe
-- SDK: task branch `nightfire` (pushed; the build takes it from there). On it: PGR1 and PGR2 smoke OK (2026-10-28).
-  EoN's smoke fails the same with and without it, in EoN's own tree at its own SDK (stuck on the intro movie
-  in1_palw.xmv): not merged into fork main until EoN's gate works again; PGR1's frame check then too
-- GitHub: remote origin git@github.com:hk21x/nightfire-recomp.git set; the private repository is to be made by Harry
-- Smoke: scripts/smoke.sh: SMOKE OK (2026-10-28): title, START, relaunch, Driving.xbe's Paris mission (146 draws a
-  frame at the end), about 4 minutes; it fails without START (no relaunch)
-- Open: the Mission Failed menu panel's texture is noise in the reference renderer (to check on Windows first)
+- Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
+  back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
+  when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
+  panels (SetPalette), the scope's colours (vertex stream read-back), a D3DX trap (recompiler)
+- XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
+  layout proven from NightFire's code
+- Push buffers: none
+- SDK: task branch `nightfire` (pushed). PGR1 and PGR2 smoke OK on it; EoN's smoke fails on its own (also without
+  this branch): fork main not moved yet, so the launcher cannot build this game; build.bat can
+- Smoke: scripts/smoke.sh, title -> START -> Driving.xbe's Paris mission, about 4 minutes
 
 ## Disc
 - PAL, title 0x45410026 (EA), certificate region 0x4, version 2. Ghidra: `~/ghidra-projects/nightfire` (game.exe,
@@ -29,6 +25,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-28 - Windows: a long session clean (main)
+
+Harry: "a fair bit of gameplay, all worked OK": 469 s in default.xbe (his saves; the on-foot side), no errors, 60
+frames a second paced, slow frames only on shader compiles (1 to 5 a 10 s window, longest 214 ms at boot).
+
+Next: the SDK branch into fork main once EoN's smoke works again (then the launcher builds NightFire); later
+missions; PC features (widescreen, FOV, skip intro) as the other ports have.
 
 ### 2026-10-28 - default.xbe trapped at 0x11234A: an instruction past the raw data (main; sdk nightfire)
 
