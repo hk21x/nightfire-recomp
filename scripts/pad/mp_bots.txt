@@ -1,0 +1,23 @@
+# vblank buttons [vblanks held]: from the main menu (launch data .local/launch_quit_to_menu.bin, NF_SKIP_INTRO=1) to a
+# Multiplayer Arena match on Skyrail with one bot, on foot (about 11000 vblanks in: 3 minutes)
+900 START 20
+1900 DOWN 10
+2100 A 10
+2600 A 10
+3100 A 10
+3700 A 10
+4300 A 10
+4900 A 10
+5500 A 10
+6100 A 10
+6700 DOWN 10
+6900 A 10
+7400 A 10
+7900 A 10
+8400 A 10
+9000 UP 10
+9200 A 10
+9700 UP 10
+9900 A 10
+10500 A 10
+11100 A 10

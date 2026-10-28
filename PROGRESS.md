@@ -28,6 +28,26 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-28 - The mouse turns the view itself on foot; on-foot play headless; the snow (pc-features)
+
+- Harry: the mouse as the right stick is no FPS mouse (dead spots, a ramp). default.xbe takes the mouse itself now
+  (GameInfo::mouse_direct; NF_DRIVING_EXE keeps Driving.xbe on the stick), src/game/mouse.cpp:
+  - The movement update 0xA9CF0 (the actor) writes the frame's turn at actor +0x28: radians added to the heading
+    next step (right negative), after an acceleration filter (0xB7420) and the stick squared. The look update 0xB7610
+    adds to the pitch at +0x838 (camera pitch = pi/2 times it) and sets +0xF0 = 1 (looked; without it the view
+    eases back level). After 0xA9CF0 for player 1 the mouse's counts go straight into both, 0.0008 radians a count
+    at 100% sensitivity, scaled by the camera's field of view over 60 degrees (the scope).
+  - Headless: NF_MOUSE_TEST=100,60,600,619: the camera turned 0.08 a frame and pitched 0.048 a frame to 0.96 and held.
+  - The dead zone rewrite (0xE76A0) is gone: the mouse no longer plays the stick on foot.
+- Found by probing: getter 0x6CA20 (player, slot): slot k is the float at 0x1FE6E4 + player * 0x158 + 4k (0 turn,
+  1 and 2 moving, 3-5 looking); style 0 fills the turn from the right stick. The headless Multiplayer profile turns
+  with the left stick (not style 0), so the keyboard's style override stays.
+- On-foot play headless: scripts/pad/mp_bots.txt (Multiplayer, one bot, Skyrail) from launch_quit_to_menu.bin.
+- The snow (Harry's F3 captures): one fixed-function point-sprite draw of 4096 points with its texture on stage 3,
+  stage 0 holding the last draw's (ferns, spheres, stripes). SDK branch nightfire-pointsprite: such a draw uses stage 3
+  as its first stage (the Xbox gives point sprite coordinates to stage 3 alone). Gate running; not in fork main yet.
+- Smoke OK.
+
 ### 2026-10-28 - The mouse past the game's stick dead zone (pc-features)
 
 - Harry: dead spots in the mouse movement. default.xbe's poll 0xE76A0 makes each stick axis a float, -100 to 100

@@ -194,7 +194,10 @@ const app::GameInfo app::kGame = {
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
     .hide_file = HideFile,                // skip_intro
-    .mouse_look = true,                   // the mouse plays the right stick: looks and aims on foot
+    .mouse_look = true,                   // the mouse looks and aims
+#ifndef NF_DRIVING_EXE
+    .mouse_direct = true,                 // on foot it turns the view itself (src/game/mouse.cpp)
+#endif
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
