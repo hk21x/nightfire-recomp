@@ -28,6 +28,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Fonts: stairs on shallow curves ironed out (pc-features)
+
+- Harry (Windows screenshot, the objective text): still a bit stepped. Scale2x fixes 45 degree stairs only; shallower
+  ones kept bumps through the Catmull-Rom field. Now Scale2x twice, then a Gaussian half a source texel wide over the
+  4x mask (separable), then bilinear 2x cut at 0.5 a pixel wide (src/common/fonts.cpp). NF_FONT_DUMP: "/" one clean
+  stroke, "0" a smooth oval, the letters' shapes kept. Smoke OK.
+- Harry asked about drawing a real font in place of the upscale: possible (stb_truetype, an OFL font like the game's,
+  each glyph fitted to its cell and baseline); not started.
+
 ### 2026-10-29 - Keyboard prompts in Driving.xbe; clean fonts in both exes (pc-features)
 
 - Driving.xbe's prompts (the pause CONTROLS tab's icons, REF_DRAWLOG draws 513-518) come from its HUD/menu atlas, a

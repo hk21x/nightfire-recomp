@@ -2,18 +2,20 @@
 //
 // Both exes' fonts are pixel art with next to no soft edge (default.xbe's 512x64 A8R8G8B8, swizzled; Driving.xbe's
 // 256x108 LIN_A8), so enlarged by interpolation (the runtime's sharp 2D) their curves and diagonals keep a stepped
-// rim. Here a glyph's shape is rebuilt instead: the mask (alpha half or more) is enlarged twice by Scale2x, which keeps
-// straight strokes straight and turns each stair into a diagonal, then twice again through a smooth field (Catmull-Rom
-// over the mask) cut at its middle a pixel wide, which rounds what is left and gives the edge its antialiasing. The
-// colour is the nearest opaque texel's. The title's picture wins over the runtime's sharpened one; the guest bytes stay
-// as they are (a font changed in memory drops it, and it is made again at the next bind).
+// rim. Here a glyph's shape is rebuilt instead: the mask (alpha half or more) is enlarged four times by Scale2x twice,
+// which keeps corners and straight strokes and turns 45 degree stairs into diagonals; a Gaussian half a source texel
+// wide over that irons out the stairs of shallower slopes (Scale2x alone left bumps on them: Harry's screenshot)
+// without closing a glyph's one-texel gaps; the field is taken twice larger again and cut at its middle a pixel
+// wide, which gives the edge its antialiasing. The colour is the nearest opaque texel's. The title's picture wins over the
+// runtime's sharpened one; the guest bytes stay as they are (a font changed in memory drops it, and it is made again
+// at the next bind).
 #include <algorithm>
-#include <cstdio>
-#include <cstdlib>
-#include <string>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
+#include <cstdlib>
 #include <mutex>
+#include <string>
 #include <unordered_map>
 #include <vector>
 
@@ -26,7 +28,9 @@
 namespace nf {
 namespace {
 
-constexpr int kScale = 8;  // Scale2x twice, then the smooth field twice
+constexpr int kScale = 8;      // Scale2x twice, then the field twice
+constexpr float kSigma = 2.0f;  // the Gaussian's, in Scale2x's texels (half a source texel)
+constexpr int kReach = 6;       // texels each side it takes
 
 struct Font {
     uint32_t format, w, h;
@@ -53,42 +57,45 @@ std::vector<uint8_t> Scale2x(const std::vector<uint8_t>& m, int w, int h) {
     return out;
 }
 
-// a 0/1 mask enlarged `s` times with antialiased edges: a Catmull-Rom field over it, cut at 0.5 a pixel wide
-std::vector<uint8_t> Smooth(const std::vector<uint8_t>& m, int w, int h, int s) {
-    auto at = [&](int x, int y) { return float(m[size_t(std::clamp(y, 0, h - 1)) * w + size_t(std::clamp(x, 0, w - 1))]); };
-    auto cubic = [](float t, float* k) {
-        float t2 = t * t, t3 = t2 * t;
-        k[0] = -0.5f * t3 + t2 - 0.5f * t;
-        k[1] = 1.5f * t3 - 2.5f * t2 + 1;
-        k[2] = -1.5f * t3 + 2 * t2 + 0.5f * t;
-        k[3] = 0.5f * t3 - 0.5f * t2;
-    };
-    const int ow = w * s, oh = h * s;
-    std::vector<float> f(size_t(ow + 2) * size_t(oh + 2));
-    for (int y = -1; y <= oh; y++) {
-        float v = (y + 0.5f) / s - 0.5f;
-        int y0 = int(std::floor(v));
-        float ky[4];
-        cubic(v - y0, ky);
-        for (int x = -1; x <= ow; x++) {
-            float u = (x + 0.5f) / s - 0.5f;
-            int x0 = int(std::floor(u));
-            float kx[4];
-            cubic(u - x0, kx);
-            float sum = 0;
-            for (int j = 0; j < 4; j++) {
-                float row = 0;
-                for (int i = 0; i < 4; i++) row += kx[i] * at(x0 - 1 + i, y0 - 1 + j);
-                sum += ky[j] * row;
-            }
-            f[size_t(y + 1) * size_t(ow + 2) + size_t(x + 1)] = sum;
+// a 0/1 mask blurred by the Gaussian (separable; outside the mask is clear)
+std::vector<float> Blur(const std::vector<uint8_t>& m, int w, int h) {
+    float k[2 * kReach + 1], ks = 0;
+    for (int i = -kReach; i <= kReach; i++) ks += k[i + kReach] = std::exp(-float(i * i) / (2 * kSigma * kSigma));
+    for (float& v : k) v /= ks;
+    std::vector<float> rows(size_t(w) * h), out(size_t(w) * h);
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++) {
+            float s = 0;
+            for (int i = -kReach; i <= kReach; i++)
+                if (x + i >= 0 && x + i < w) s += k[i + kReach] * m[size_t(y) * w + size_t(x + i)];
+            rows[size_t(y) * w + x] = s;
         }
-    }
+    for (int y = 0; y < h; y++)
+        for (int x = 0; x < w; x++) {
+            float s = 0;
+            for (int j = -kReach; j <= kReach; j++)
+                if (y + j >= 0 && y + j < h) s += k[j + kReach] * rows[size_t(y + j) * w + x];
+            out[size_t(y) * w + x] = s;
+        }
+    return out;
+}
+
+// a field `s` times larger (bilinear) cut at 0.5 a pixel wide: the edge's coverage
+std::vector<uint8_t> Cut(const std::vector<float>& f, int w, int h, int s) {
+    auto at = [&](int x, int y) { return f[size_t(std::clamp(y, 0, h - 1)) * w + size_t(std::clamp(x, 0, w - 1))]; };
+    const int ow = w * s, oh = h * s;
+    auto field = [&](int x, int y) {
+        float u = (x + 0.5f) / s - 0.5f, v = (y + 0.5f) / s - 0.5f;
+        int x0 = int(std::floor(u)), y0 = int(std::floor(v));
+        float fx = u - x0, fy = v - y0;
+        return (at(x0, y0) * (1 - fx) + at(x0 + 1, y0) * fx) * (1 - fy) +
+               (at(x0, y0 + 1) * (1 - fx) + at(x0 + 1, y0 + 1) * fx) * fy;
+    };
     std::vector<uint8_t> out(size_t(ow) * oh);
     for (int y = 0; y < oh; y++)
         for (int x = 0; x < ow; x++) {
-            auto F = [&](int dx, int dy) { return f[size_t(y + 1 + dy) * size_t(ow + 2) + size_t(x + 1 + dx)]; };
-            float c = F(0, 0), gx = (F(1, 0) - F(-1, 0)) / 2, gy = (F(0, 1) - F(0, -1)) / 2;
+            float c = field(x, y), gx = (field(x + 1, y) - field(x - 1, y)) / 2;
+            float gy = (field(x, y + 1) - field(x, y - 1)) / 2;
             float g = std::sqrt(gx * gx + gy * gy);
             float a = g > 1e-4f ? (c - 0.5f) / g + 0.5f : (c >= 0.5f ? 1.0f : 0.0f);
             out[size_t(y) * ow + x] = uint8_t(std::clamp(a, 0.0f, 1.0f) * 255 + 0.5f);
@@ -100,8 +107,8 @@ std::vector<uint8_t> Smooth(const std::vector<uint8_t>& m, int w, int h, int s) 
 std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
     std::vector<uint8_t> mask(size_t(w) * h);
     for (size_t i = 0; i < mask.size(); i++) mask[i] = (bgra[i] >> 24) >= 128;
-    std::vector<uint8_t> m2 = Scale2x(Scale2x(mask, w, h), w * 2, h * 2);
-    std::vector<uint8_t> alpha = Smooth(m2, w * 4, h * 4, kScale / 4);
+    std::vector<uint8_t> m4 = Scale2x(Scale2x(mask, w, h), w * 2, h * 2);
+    std::vector<uint8_t> alpha = Cut(Blur(m4, w * 4, h * 4), w * 4, h * 4, kScale / 4);
     // each texel's colour: its own where it shows, else an opaque neighbour's (the glyph's), else white
     std::vector<uint32_t> colour(size_t(w) * h, 0xFFFFFF);
     for (int y = 0; y < h; y++)
@@ -120,7 +127,8 @@ std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
     std::vector<uint32_t> out(size_t(ow) * oh);
     for (int y = 0; y < oh; y++)
         for (int x = 0; x < ow; x++)
-            out[size_t(y) * ow + x] = colour[size_t(y / kScale) * w + x / kScale] | uint32_t(alpha[size_t(y) * ow + x]) << 24;
+            out[size_t(y) * ow + x] =
+                colour[size_t(y / kScale) * w + x / kScale] | uint32_t(alpha[size_t(y) * ow + x]) << 24;
     return out;
 }
 
@@ -149,7 +157,7 @@ void FontPicture(uint32_t header) {
     const auto* guest = static_cast<const uint8_t*>(kernel::HostPtr(d.data));
     uint64_t hash = Fnv(guest, bytes);
     auto it = g_made.find(d.data);
-    if (it != g_made.end() && it->second == hash) return;  // dropped by the renderer since: not again for the same bytes
+    if (it != g_made.end() && it->second == hash) return;  // made from these bytes already
     g_made[d.data] = hash;
     std::vector<uint32_t> px;
     if (!gpu::DecodeBgra(d, 0, guest, px)) return;
