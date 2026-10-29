@@ -28,6 +28,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Driving.xbe's font from Sour Gummy Black too (pc-features)
+
+- EA's font file holds its glyph table before its kerning pairs and the pixels (Driving.xbe font 82E2E580: records at
+  82E2D080, 12 bytes each, code order: code u16, width, height, x u16, y u16, advance, x offset, y offset from the
+  line's top; 191 codes, the printable Latin-1; then the kerning pairs' count 747 and the pairs, "Buy ERTS", the
+  pixels). fonts.cpp's EaTable finds it from the texture's data (back to the 0xFF record whose pairs end just before
+  the pixels, then down to the space); DrawEaFont draws each code into its rectangle on the line's baseline (the H's
+  bottom), sized to the H, fitted; EA's ligature codes (^ | ~ thorn: ffi ffl ff fl) and much-shrunk glyphs keep the
+  game's. Headless Paris: "Driving.xbe's font drawn from Sour Gummy Black". Smoke OK.
+
 ### 2026-10-29 - Driving pause prompts: Enter for Select, the Scroll icon (pc-features)
 
 - Harry's car pause screenshot: Select showed the mouse (A's play key) and Scroll a stray mark. The atlas's d-pad

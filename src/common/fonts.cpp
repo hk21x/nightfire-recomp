@@ -110,9 +110,10 @@ std::vector<uint8_t> Cut(const std::vector<float>& f, int w, int h, int s) {
 }
 
 bool DrawFont(const std::vector<uint8_t>& mask, int w, int h, std::vector<uint8_t>& alpha);
+bool DrawEaFont(uint32_t data, int w, int h, std::vector<uint8_t>& alpha);
 
 // the font's picture kScale times larger (B8G8R8A8 rows)
-std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
+std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h, uint32_t data) {
     std::vector<uint8_t> mask(size_t(w) * h);
     for (size_t i = 0; i < mask.size(); i++) mask[i] = (bgra[i] >> 24) >= 128;
     std::vector<uint8_t> m4 = Scale2x(Scale2x(mask, w, h), w * 2, h * 2);
@@ -120,6 +121,10 @@ std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
     if (w == 512 && h == 64 && DrawFont(mask, w, h, alpha)) {
         static bool said = false;
         if (!said) said = true, LOGR("nightfire: default.xbe's font drawn from Sour Gummy Black");
+    }
+    if (w == 256 && h == 108 && DrawEaFont(data, w, h, alpha)) {
+        static bool said = false;
+        if (!said) said = true, LOGR("nightfire: Driving.xbe's font drawn from Sour Gummy Black");
     }
     // each texel's colour: its own where it shows, else an opaque neighbour's (the glyph's), else white
     std::vector<uint32_t> colour(size_t(w) * h, 0xFFFFFF);
@@ -271,6 +276,88 @@ bool DrawFont(const std::vector<uint8_t>& mask, int w, int h, std::vector<uint8_
     return true;
 }
 
+// Driving.xbe's font (EA's) keeps its glyph table in the same file, before its kerning pairs and the pixels: records
+// of 12 bytes in code order (code u16, width, height, x u16, y u16 on the sheet, advance, x and y offsets from the
+// pen and the line's top), the last the code 0xFF, then the kerning pairs' count and the pairs (4 bytes each), then a
+// few bytes to the pixels. Each glyph's rectangle is cleared and its character drawn into it from the font: one size
+// (the game's H's height), on the line's baseline (the bottom of its H), centred, fitted to the rectangle; one that
+// would be much smaller keeps the game's glyph, rebuilt, as do the codes EA gave its ligatures (^ | ~ and the thorn).
+struct EaGlyph {
+    uint32_t code;
+    int w, h, x, y, yoff;
+};
+
+std::vector<EaGlyph> EaTable(uint32_t data) {
+    std::vector<EaGlyph> out;
+    for (uint32_t back = 16; back < 0x8000; back += 4) {
+        uint32_t p = data - back;
+        if (!mem::IsCommitted(p) || kernel::G<uint16_t>(p) != 0xFF) continue;
+        uint32_t pairs = kernel::R32(p + 12), end = p + 16 + pairs * 4;
+        if (pairs > 0x4000 || end > data || data - end > 256) continue;
+        // the records back from 0xFF, codes falling, to the space
+        uint32_t last = 0x100;
+        for (uint32_t r = p; mem::IsCommitted(r) && r > data - 0x10000; r -= 12) {
+            uint32_t code = kernel::G<uint16_t>(r);
+            int w = kernel::G<uint8_t>(r + 2), h = kernel::G<uint8_t>(r + 3);
+            int x = kernel::G<uint16_t>(r + 4), y = kernel::G<uint16_t>(r + 6), yoff = kernel::G<int8_t>(r + 10);
+            if (code >= last || code < 0x20 || x + w > 256 || y + h > 108) break;
+            out.push_back({code, w, h, x, y, yoff});
+            last = code;
+            if (code == 0x20) return out;
+        }
+        out.clear();
+    }
+    return out;
+}
+
+bool DrawEaFont(uint32_t data, int w, int h, std::vector<uint8_t>& alpha) {
+    std::vector<EaGlyph> table = EaTable(data);
+    const EaGlyph* big_h = nullptr;
+    for (const EaGlyph& g : table)
+        if (g.code == 'H') big_h = &g;
+    if (!big_h || big_h->h <= 0) return false;
+    stbtt_fontinfo font;
+    if (!stbtt_InitFont(&font, kFontTtf, stbtt_GetFontOffsetForIndex(kFontTtf, 0))) return false;
+    int hx0, hy0, hx1, hy1;
+    if (!stbtt_GetCodepointBox(&font, 'H', &hx0, &hy0, &hx1, &hy1) || hy1 <= 0) return false;
+    float scale = float(big_h->h) * kScale / float(hy1);
+    int line_base = big_h->yoff + big_h->h;  // texels from the line's top
+    const int ow = w * kScale;
+    for (const EaGlyph& g : table) {
+        if (g.code <= 0x20 || g.w <= 0 || g.h <= 0 || !stbtt_FindGlyphIndex(&font, int(g.code))) continue;
+        if (g.code == '^' || g.code == '|' || g.code == '~' || g.code == 0xDE) continue;  // EA's ffi, ffl, ff, fl
+        float base = float(line_base - g.yoff) * kScale;  // the baseline from the rectangle's top, output pixels
+        float above = base, below = float(g.h) * kScale - base, slot_w = float(g.w) * kScale;
+        int bx0, by0, bx1, by1;
+        stbtt_GetCodepointBitmapBox(&font, int(g.code), scale, scale, &bx0, &by0, &bx1, &by1);
+        float sy = scale;
+        if (by0 < 0 && -by0 > above) sy = std::min(sy, scale * above / float(-by0));
+        if (by1 > 0 && by1 > below) sy = std::min(sy, scale * below / float(by1));
+        if (sy < scale * 0.75f) continue;  // much smaller than its neighbours: the game's
+        stbtt_GetCodepointBitmapBox(&font, int(g.code), sy, sy, &bx0, &by0, &bx1, &by1);
+        float sx = sy;
+        if (bx1 - bx0 > slot_w) sx = sy * slot_w / float(bx1 - bx0);
+        stbtt_GetCodepointBitmapBox(&font, int(g.code), sx, sy, &bx0, &by0, &bx1, &by1);
+        int gw = bx1 - bx0, gh = by1 - by0;
+        if (gw <= 0 || gh <= 0) continue;
+        std::vector<uint8_t> bm(size_t(gw) * gh);
+        stbtt_MakeCodepointBitmap(&font, bm.data(), gw, gh, gw, sx, sy, int(g.code));
+        int cx0 = g.x * kScale, cx1 = (g.x + g.w) * kScale, cy0 = g.y * kScale, cy1 = (g.y + g.h) * kScale;
+        for (int y = cy0; y < cy1; y++)
+            for (int x = cx0; x < cx1; x++) alpha[size_t(y) * ow + x] = 0;
+        int left = cx0 + int(std::lround((slot_w - float(gw)) / 2)), top = cy0 + int(std::lround(base)) + by0;
+        for (int y = 0; y < gh; y++)
+            for (int x = 0; x < gw; x++) {
+                int ox = left + x, oy = top + y;
+                if (ox < cx0 || ox >= cx1 || oy < cy0 || oy >= cy1) continue;
+                uint8_t& o = alpha[size_t(oy) * ow + ox];
+                o = std::max(o, bm[size_t(y) * gw + x]);
+            }
+    }
+    (void)h;
+    return true;
+}
+
 std::mutex g_lock;
 std::unordered_map<uint32_t, uint64_t> g_made;  // texture data -> the guest bytes' FNV-1a it was made from
 
@@ -300,7 +387,7 @@ void FontPicture(uint32_t header) {
     g_made[d.data] = hash;
     std::vector<uint32_t> px;
     if (!gpu::DecodeBgra(d, 0, guest, px)) return;
-    std::vector<uint32_t> big = Rebuild(px, int(d.width), int(d.height));
+    std::vector<uint32_t> big = Rebuild(px, int(d.width), int(d.height), d.data);
     // NF_FONT_DUMP=folder: each font as built (font_<texture>.tga), to look at
     if (const char* dir = std::getenv("NF_FONT_DUMP"))
         if (FILE* f = std::fopen((std::string(dir) + "/font_" + std::to_string(d.data) + ".tga").c_str(), "wb")) {
