@@ -28,6 +28,22 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Keyboard prompts in Driving.xbe; clean fonts in both exes (pc-features)
+
+- Driving.xbe's prompts (the pause CONTROLS tab's icons, REF_DRAWLOG draws 513-518) come from its HUD/menu atlas, a
+  256x256 P8 (swizzled indices; FNV-1a 0x96C6096C3CB2BF53) the game binds with three palettes; the icons' palette is
+  the one whose entry under the A icon is green. src/common/buttons.cpp now has a layout per atlas: the Xbox
+  pictures' boxes (from the atlas drawn with that palette), drawn as keys and coded to that palette's nearest
+  colours, at the atlas's size (no replacement: it would not follow the palettes). On a mounted gun RT and LT show
+  the mouse's buttons and the reload button R; in the car the right stick (look back) its key. Headless car pause,
+  CONTROLS: Fire the left button, Handbrake SPACE, C, Gadget the right button, Steer W A S D, S, Q, W, Z.
+- Fonts (src/common/fonts.cpp): default.xbe's 512x64 A8R8G8B8 and Driving.xbe's 256x108 LIN_A8 are pixel art; the
+  runtime's sharp 2D (interpolation) left stepped rims. Rebuilt 8x: the mask through Scale2x twice (straight strokes
+  kept, stairs made diagonals), then a Catmull-Rom field cut at its middle a pixel wide; the colour the nearest
+  opaque texel's; the title's replacement (gpu::SetReplacement) wins over the sharpened one. NF_FONT_DUMP=folder
+  writes each as built. Headless: both rebuilt (default 8286A000, Driving 81CDBC80 and 82F50180).
+- Smoke OK.
+
 ### 2026-10-29 - Keyboard prompts on foot: the button pictures show the keys (pc-features)
 
 - Harry: prompts should show the keys, as in EoN. default.xbe draws every prompt (menus' help lines, the pause

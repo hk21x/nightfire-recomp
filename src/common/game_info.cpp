@@ -170,6 +170,12 @@ constexpr void (*SaveKeys)(void*) = nullptr;
 #endif
 }  // namespace
 
+// GameInfo::texture_bound: the fonts (src/common/fonts.cpp), the button pictures (src/common/buttons.cpp)
+bool TextureBound(uint32_t header, uint32_t palette) {
+    nf::FontPicture(header);
+    return nf::ButtonPictures(header, palette);
+}
+
 // what the runtime asks of the game; strings must be set, hooks may stay null
 const app::GameInfo app::kGame = {
     .title = L"007: NightFire",          // window and splash
@@ -202,7 +208,7 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // the view and the mounted guns turn by it directly (src/game/mouse.cpp,
                                           // src/driving/mouse.cpp), not as the right stick
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
-    .texture_bound = nf::ButtonPictures,  // the button pictures as the keys while the keyboard plays
+    .texture_bound = TextureBound,        // the button pictures as the keys, the fonts with smooth edges
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
 };
