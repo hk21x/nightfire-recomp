@@ -11,8 +11,10 @@
 // right stick as the mouse. default.xbe's is written back into guest memory and drawn four times larger for the
 // renderers (gpu::SetReplacement); Driving.xbe's texels become the nearest colours of the palette the icons are
 // drawn with (its entry under the A icon green), at its own size (a replacement would not follow the palettes). The
-// controller's look puts the disc's bytes back. The HUD binds an atlas once, so it is also redrawn from each poll
-// (RefreshButtons) when the look changes.
+// controller's look shows today's Xbox pad (modern_buttons, EoN's pictures): A B X Y as coloured letters on dark
+// discs, White and Black as LB and RB, the triggers as LT and RT, Start and Back as the Menu and View buttons, the
+// d-pads with the arms meant lit white, the sticks plainer; off, the disc's bytes go back. The HUD binds an atlas
+// once, so it is also redrawn from each poll (RefreshButtons) when the look changes.
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -32,6 +34,8 @@
 #include "strokes.h"
 
 namespace nf {
+bool modern_buttons = true;  // the setting (src/common/game_info.cpp)
+
 namespace {
 
 struct Rgba {
@@ -45,11 +49,12 @@ struct Box {
 
 constexpr Rgba kClear{0, 0, 0, 0};
 constexpr Colour kCapEdge{200, 200, 200, 255}, kDimEdge{75, 75, 75, 255}, kDimText{95, 95, 95, 255};
-constexpr Colour kDark{30, 30, 30, 255}, kWhite{255, 255, 255, 255};
+constexpr Colour kDark{30, 30, 30, 255}, kWhite{255, 255, 255, 255}, kEdge{150, 150, 150, 255};
 
-// what the pictures show: the disc's, or the keys and mouse buttons bound to each control (in a menu, on a gun)
+// what the pictures show: the disc's, a modern pad's, or the keys and mouse buttons bound to each control (in a
+// menu, on a gun)
 struct Look {
-    bool keys = false, menu = false, held = false;  // held: Bond not the player's to move (PlayerFree)
+    bool modern = false, keys = false, menu = false, held = false;  // held: Bond not the player's to move (PlayerFree)
     int gun = -1;
     std::array<std::array<uint16_t, 2>, input::kControls> bound{};
     bool operator==(const Look&) const = default;
@@ -58,7 +63,10 @@ struct Look {
 Look Current() {
     Look l;
     l.keys = input::UsingKeyboard();
-    if (!l.keys) return l;
+    if (!l.keys) {
+        l.modern = modern_buttons;
+        return l;
+    }
     l.menu = MenuKeys();
     l.held = !kDriving && !PlayerFree();
     l.gun = kDriving ? GunStyle() : -1;
@@ -221,8 +229,8 @@ const Layout kDrivingAtlas{0x0B, 256, 256, true, 0x96C6096C3CB2BF53ull,
                        {{235, 235, 249, 254}, Picture::kKey, input::kWhite, 0, 2},
                        {{162, 58, 184, 75}, Picture::kKey, input::kStart, 0, 2},
                        {{162, 138, 184, 157}, Picture::kKey, input::kBack, 0, 2},
-                       {{241, 111, 255, 128}, Picture::kKey, input::kLT, 0, 1},
-                       {{241, 158, 255, 172}, Picture::kKey, input::kRT, 0, 0},
+                       {{242, 111, 255, 130}, Picture::kKey, input::kLT, 0, 1},
+                       {{242, 152, 255, 172}, Picture::kKey, input::kRT, 0, 1},
                        {{211, 19, 229, 36}, Picture::kCluster, -1, 0, 1},
                        {{211, 0, 229, 15}, Picture::kMouse, 0, 1, 0},
                        {{220, 117, 239, 136}, Picture::kCluster, 3, 0, 1},
@@ -231,7 +239,139 @@ const Layout kDrivingAtlas{0x0B, 256, 256, true, 0x96C6096C3CB2BF53ull,
                        {{160, 158, 182, 178}, Picture::kCluster, 12, 0, 1}},
                       {228, 103, 230, 105}};
 
+// a modern pad's pictures (EoN's, sized by each box: Driving.xbe's are smaller)
+
+// the box's middle and the side of the square inside it
+struct Square {
+    float cx, cy, side;
+};
+Square Middle(Area a) { return {(a.x0 + a.x1) / 2, (a.y0 + a.y1) / 2, std::min(a.x1 - a.x0, a.y1 - a.y0)}; }
+Area Around(Square q, float side) { return {q.cx - side / 2, q.cy - side / 2, q.cx + side / 2, q.cy + side / 2}; }
+
+// a dark disc with a lighter rim
+void Disc(Canvas& c, float cx, float cy, float r) {
+    float rim = std::max(0.5f, r * 0.1f);
+    Area a{cx - r - 1, cy - r - 1, cx + r + 1, cy + r + 1};
+    Fill(c, a, kEdge, [&](float x, float y) { return CircleDistance(x, y, cx, cy, r); });
+    Fill(c, a, kDark, [&](float x, float y) { return CircleDistance(x, y, cx, cy, r - rim); });
+}
+
+// A B X Y: the letter in the button's colour on a dark disc
+void FaceButton(Canvas& c, Area a, const char* letter, Colour colour) {
+    Square q = Middle(a);
+    float r = q.side / 2 - 0.5f;
+    Disc(c, q.cx, q.cy, r);
+    Text(c, letter, q.cx, q.cy, r * 1.1f, std::max(0.6f, r * 0.24f), colour);
+}
+
+// LT RT LB RB: a plate with the label, a trigger rounder at the top than a bumper
+void Shoulder(Canvas& c, Area plate, bool trigger, const char* label) {
+    float w = plate.x1 - plate.x0, h = plate.y1 - plate.y0;
+    float top = trigger ? w * 0.3f : h * 0.25f, bottom = trigger ? w * 0.1f : h * 0.25f, rim = std::max(0.5f, w * 0.06f);
+    Fill(c, plate, kEdge, [&](float x, float y) { return BoxDistance(x, y, plate, top, bottom); });
+    Fill(c, plate, kDark, [&](float x, float y) { return BoxDistance(x, y, plate, top, bottom) + rim; });
+    float height = std::min(h * 0.45f, (w - 2 * rim) * 0.8f / TextWidth(label, 1));
+    Text(c, label, (plate.x0 + plate.x1) / 2, (plate.y0 + plate.y1) / 2, height, std::max(0.45f, height * 0.19f), kWhite);
+}
+
+// Menu (three lines) and View (two overlapping squares) on a dark disc
+void Menu(Canvas& c, Area a) {
+    Square q = Middle(a);
+    float r = q.side / 2 - 0.5f, k = r / 7;
+    Disc(c, q.cx, q.cy, r);
+    std::vector<Segment> lines;
+    for (int i = -1; i <= 1; i++) lines.push_back({{q.cx - 2.6f * k, q.cy + i * 2.8f * k}, {q.cx + 2.6f * k, q.cy + i * 2.8f * k}});
+    Fill(c, Around(q, r * 1.5f), kWhite, [&](float x, float y) { return StrokeDistance(x, y, lines, std::max(0.4f, 0.6f * k)); });
+}
+
+void View(Canvas& c, Area a) {
+    Square q = Middle(a);
+    float r = q.side / 2 - 0.5f, k = r / 7;
+    Disc(c, q.cx, q.cy, r);
+    auto square = [&](float x0, float y0, bool front) {
+        Area s{x0, y0, x0 + 4.4f * k, y0 + 4.4f * k};
+        std::vector<Segment> edges = {{{s.x0, s.y0}, {s.x1, s.y0}}, {{s.x1, s.y0}, {s.x1, s.y1}},
+                                      {{s.x1, s.y1}, {s.x0, s.y1}}, {{s.x0, s.y1}, {s.x0, s.y0}}};
+        Area around{s.x0 - 1, s.y0 - 1, s.x1 + 1, s.y1 + 1};
+        if (front) Fill(c, around, kDark, [&](float x, float y) { return BoxDistance(x, y, s, 0.5f * k, 0.5f * k); });
+        Fill(c, around, kWhite, [&](float x, float y) { return StrokeDistance(x, y, edges, std::max(0.4f, 0.55f * k)); });
+    };
+    square(q.cx - 3.6f * k, q.cy - 3.6f * k, false);
+    square(q.cx - 0.8f * k, q.cy - 0.8f * k, true);
+}
+
+// a d-pad: a dark disc with the cross, the arms named lit (up 1, down 2, left 4, right 8) white
+void DPad(Canvas& c, Area box, int lit) {
+    Square q = Middle(box);
+    Area a = Around(q, q.side);
+    float k = q.side / 20, rim = std::max(0.5f, 0.8f * k);
+    Fill(c, a, kEdge, [&](float x, float y) { return EllipseDistance(x, y, a); });
+    Area in{a.x0 + rim, a.y0 + rim, a.x1 - rim, a.y1 - rim};
+    Fill(c, a, kDark, [&](float x, float y) { return EllipseDistance(x, y, in); });
+    float w = 2.6f * k, l = q.side / 2 - 3.0f * k, round = 0.8f * k;
+    Area arms[4] = {{q.cx - w, q.cy - l, q.cx + w, q.cy}, {q.cx - w, q.cy, q.cx + w, q.cy + l},
+                    {q.cx - l, q.cy - w, q.cx, q.cy + w}, {q.cx, q.cy - w, q.cx + l, q.cy + w}};
+    constexpr Colour kArm{110, 110, 110, 255};
+    for (int i = 0; i < 4; i++)
+        Fill(c, arms[i], kArm, [&](float x, float y) { return BoxDistance(x, y, arms[i], round, round); });
+    for (int i = 0; i < 4; i++) {
+        if (!(lit >> i & 1)) continue;
+        Area arm = arms[i];  // its outer part, the middle left grey
+        if (i == 0) arm.y1 -= w;
+        if (i == 1) arm.y0 += w;
+        if (i == 2) arm.x1 -= w;
+        if (i == 3) arm.x0 += w;
+        Fill(c, arm, kWhite, [&](float x, float y) { return BoxDistance(x, y, arm, round, round); });
+    }
+}
+
+// a thumbstick from above: a dark cap, its dished top a ring lighter
+void Stick(Canvas& c, Area box) {
+    Square q = Middle(box);
+    Area a = Around(q, q.side);
+    float rim = std::max(0.5f, q.side * 0.04f);
+    Fill(c, a, kEdge, [&](float x, float y) { return EllipseDistance(x, y, a); });
+    Area in{a.x0 + rim, a.y0 + rim, a.x1 - rim, a.y1 - rim};
+    Fill(c, a, kDark, [&](float x, float y) { return EllipseDistance(x, y, in); });
+    float d = q.side * 0.2f;
+    Area dish{a.x0 + d, a.y0 + d, a.x1 - d, a.y1 - d};
+    constexpr Colour kRing{80, 80, 80, 255};
+    Fill(c, a, kRing, [&](float x, float y) { return std::abs(EllipseDistance(x, y, dish)) - rim * 0.75f; });
+}
+
+void DrawModern(Canvas& c, const Layout& lay) {
+    for (const Picture& p : lay.pictures) {
+        Area a = Inset(p.box, 0, 0);
+        if (p.kind == Picture::kMouse || (p.kind == Picture::kCluster && p.control < 0)) {
+            Stick(c, a);
+            continue;
+        }
+        if (p.kind == Picture::kCluster) {
+            DPad(c, a, p.control);
+            continue;
+        }
+        float w = a.x1 - a.x0, h = a.y1 - a.y0;
+        Area trigger{a.x0 + w * 0.08f, a.y0 + h * 0.12f, a.x1 - w * 0.08f, a.y1 - h * 0.12f};
+        float bh = std::min(h * 0.6f, w * 0.75f), cy = (a.y0 + a.y1) / 2;
+        Area bumper{a.x0 + 0.5f, cy - bh / 2, a.x1 - 0.5f, cy + bh / 2};
+        switch (p.control) {
+            case input::kA: FaceButton(c, a, "A", {100, 200, 60, 255}); break;
+            case input::kB: FaceButton(c, a, "B", {235, 60, 60, 255}); break;
+            case input::kX: FaceButton(c, a, "X", {50, 140, 245, 255}); break;
+            case input::kY: FaceButton(c, a, "Y", {250, 200, 40, 255}); break;
+            case input::kWhite: Shoulder(c, bumper, false, "LB"); break;
+            case input::kBlack: Shoulder(c, bumper, false, "RB"); break;
+            case input::kLT: Shoulder(c, trigger, true, "LT"); break;
+            case input::kRT: Shoulder(c, trigger, true, "RT"); break;
+            case input::kStart: Menu(c, a); break;
+            case input::kBack: View(c, a); break;
+            default: break;
+        }
+    }
+}
+
 void DrawKeys(Canvas& c, const Layout& lay, const Look& look) {
+    if (look.modern) return DrawModern(c, lay);
     const int dpad[4] = {input::kUp, input::kDown, input::kLeft, input::kRight};
     const int move[4] = {input::kLSUp, input::kLSDown, input::kLSLeft, input::kLSRight};
     for (const Picture& p : lay.pictures) {
@@ -371,7 +511,7 @@ void Redraw(const Atlas& a, const Look& look, std::vector<uint8_t>& bytes, std::
 // the atlas drawn for a look (the disc's bytes back for the controller's), in guest memory and for the renderers
 void Apply(Atlas& a, const Look& look) {
     auto* bytes = static_cast<uint8_t*>(kernel::HostPtr(a.data));
-    if (!look.keys) {
+    if (!look.keys && !look.modern) {
         std::memcpy(bytes, a.disc.data(), a.bytes);
         if (!a.lay->p8) gpu::ClearReplacement(a.data);
     } else {
@@ -390,7 +530,7 @@ void Apply(Atlas& a, const Look& look) {
     a.written = Fnv(bytes, a.bytes);
     a.drawn = look;
     LOGR("nightfire: the button pictures (%08X) drawn as %s", a.data,
-         !look.keys ? "the disc has them" : look.menu ? "the keys and mouse, for a menu"
+         look.modern ? "a modern pad's" : !look.keys ? "the disc has them" : look.menu ? "the keys and mouse, for a menu"
                                                       : look.gun >= 0 ? "the keys and mouse, for a gun" : "the keys and mouse");
 }
 
@@ -418,7 +558,11 @@ bool ButtonPictures(uint32_t header, uint32_t palette) {
     if (g_atlas && g_atlas->data == data && !Holds(*g_atlas)) g_atlas.reset();  // the memory holds something else
     if (!g_atlas || g_atlas->data != data) {
         if (Fnv(bytes, size) != lay.disc) return false;  // not the atlas (or not as the disc has it)
-        if (g_atlas && Holds(*g_atlas) && g_atlas->drawn.keys) Apply(*g_atlas, Look{});  // the old copy as it was
+        if (g_atlas && Holds(*g_atlas) && (g_atlas->drawn.keys || g_atlas->drawn.modern)) {
+            Look disc;  // the old copy as it was
+            disc.modern = false;
+            Apply(*g_atlas, disc);
+        }
         auto a = std::make_unique<Atlas>();
         a->lay = &lay;
         a->data = data;

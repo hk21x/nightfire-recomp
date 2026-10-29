@@ -16,6 +16,7 @@
 namespace nf {
 bool skip_intro = false;
 uint32_t fov_percent = 100;
+extern bool modern_buttons;  // src/common/buttons.cpp
 
 float Ultrawide() {
     static const float forced = [] {  // NF_ULTRAWIDE=k headless (no settings or screen): the 3D k times wider
@@ -48,11 +49,13 @@ namespace {
 void Init() {
     if (const char* e = std::getenv("NF_SKIP_INTRO"); e && *e) nf::skip_intro = *e == '1';
     if (const char* e = std::getenv("NF_FOV"); e && *e) nf::fov_percent = uint32_t(std::atoi(e));
+    if (const char* e = std::getenv("NF_MODERN_BUTTONS"); e && *e) nf::modern_buttons = *e == '1';
     // every achievement's condition parses (a typo would leave it never met)
     for (const achievements::Def& d : app::kGame.achievements)
         if (std::string e = achievements::Check(d.condition); !e.empty())
             LOGE("nightfire: achievement %s: %s", d.id, e.c_str());
     if (nf::skip_intro) LOGR("nightfire: the intro logos are skipped (skip_intro)");
+    if (!nf::modern_buttons) LOGR("nightfire: the console's button pictures (modern_buttons off)");
 }
 
 // skip_intro: default.xbe's EA (07370048) and MGM (07380048) logo movies reported missing, which the game passes
@@ -193,6 +196,8 @@ const app::GameInfo app::kGame = {
                                           // each recompiled xbe and its exe, for title launches
     .options = {{"skip_intro", &nf::skip_intro, nullptr, "Skip intro movies",
                  "Starts without the EA and MGM logo movies"},
+                {"modern_buttons", &nf::modern_buttons, nullptr, "Modern button pictures",
+                 "A controller's prompts as today's Xbox pad marks them: LB and RB for White and Black, Menu and View for Start and Back."},
                 {"fov_percent", nullptr, &nf::fov_percent, "Field of view (%)",
                  "50 to 150; 100 is the game's. On foot, driving and in the engine's cutscenes; the scope zooms in proportion."}},
     .load = LoadKeys,                     // Driving.xbe's keys apart (DrivingKeys)
