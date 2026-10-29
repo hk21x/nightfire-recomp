@@ -14,7 +14,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
-  work, ultrawide and keypads still to check
+  and keypads work, ultrawide still to check
 - Smoke: scripts/smoke.sh, title -> START -> Driving.xbe's Paris mission, about 4 minutes
 
 ## Disc
@@ -34,7 +34,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Confirmed on Windows: mission loading screens whole (sdk 8acd824), PC Settings (resolution text and applying),
   mounted guns with the mouse, achievements, the icon, the Quit game button (F1), driving at 60 frames a second
   (the vertex buffer wait costs nothing seen).
-- Still to check: keypads with the left mouse button / Enter, ultrawide.
+- Keypads with the left mouse button / Enter confirmed too. Still to check: ultrawide.
 - Next: the first release (notes, launcher run, GitHub release), then polish (Hide HUD, modern button pictures,
   PC Settings in the pause menu, Quit Game in the game's menu, mouse prompts in the driving menus).
 
