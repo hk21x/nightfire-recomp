@@ -28,6 +28,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Keyboard prompts on foot: the button pictures show the keys (pc-features)
+
+- Harry: prompts should show the keys, as in EoN. default.xbe draws every prompt (menus' help lines, the pause
+  CONTROLS tab, hints) from one 256x128 A8R8G8B8 swizzled atlas with the PS2 and GameCube pictures too (FNV-1a
+  0xF0D6752BB8C56E3B, loaded again per level at another address). src/common/buttons.cpp (EoN's buttons.cpp and
+  strokes.h adapted): while the keyboard plays, the Xbox pictures' boxes are drawn as each button's first key (in
+  the front end's menus A as ENTER, B as BKSP: nf::MenuKeys; a level's pause shows the keys played, which its
+  CONTROLS tab lists), the triggers and White as mouse buttons, the d-pads as arrow keys, the left stick W A S D, the
+  right the mouse; written to guest memory and 4x for the renderers (gpu::SetReplacement). The HUD binds the atlas
+  once, so it is also redrawn from each poll (RefreshButtons) when the look changes.
+- The keyboard's style override (style 0) now holds while the keyboard plays, so the game's controls page and
+  prompts name the buttons the keys play; a controller puts the chosen style back, and 0x6ED30 (a player's controls
+  packed for the profile and launch data) sees the chosen style.
+- Headless: the main menu's "Scroll / Select" as the arrow keys and ENTER; the bot match's CONTROLS tab with every
+  picture a key or mouse button (its style text was the controller's: pad script presses are a controller's).
+- Driving.xbe: its prompts are glyphs of its LIN_A8 256x108 font tinted by vertex colour (the CONTROLS tab's icons),
+  not a picture atlas: not done yet.
+- Smoke OK.
+
 ### 2026-10-28 - PC controls in Driving.xbe: the mounted guns, the car, the menus (pc-features)
 
 - Harry: the on-foot controls did not reach the vehicle missions (Alpine Escape's snowmobile turret, the Paris van's

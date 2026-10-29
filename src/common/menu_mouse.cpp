@@ -46,6 +46,7 @@ void MenuMouse(int port, input::Pad& p) {
     constexpr int64_t kPress = 70, kGap = 70;  // ms
     constexpr uint16_t kMouseBits[3] = {0x01, 0x02, 0x04};  // VK_LBUTTON VK_RBUTTON VK_MBUTTON
     if (port != 0) return;
+    RefreshButtons();  // the button pictures for the keyboard or the controller, as it changes
     static int pending = 0;  // notches to play, up positive
     static int64_t pulse = 0;
     static bool was_menu = false;

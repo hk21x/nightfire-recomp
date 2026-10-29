@@ -16,6 +16,9 @@ bool MenuUp() {
     return hud && kernel::G<uint8_t>(hud + 0x2B0) != 0;
 }
 
+// EA's menus are a level's (Paused, whose CONTROLS tab names the keys played): the keys as played
+bool MenuKeys() { return false; }
+
 // the control map (0x1E455C): +4 its mode, 1 a mounted gun (data\control\povcfgN.def), 0 the car (drivecfg.def), 2 none
 // yet; +0xC the gun's style (the player's controller style)
 int GunStyle() {

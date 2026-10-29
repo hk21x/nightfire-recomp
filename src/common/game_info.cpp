@@ -202,6 +202,7 @@ const app::GameInfo app::kGame = {
     .mouse_direct = true,                 // the view and the mounted guns turn by it directly (src/game/mouse.cpp,
                                           // src/driving/mouse.cpp), not as the right stick
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
+    .texture_bound = nf::ButtonPictures,  // the button pictures as the keys while the keyboard plays
     // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
     // the same code), .wheel (what a steering wheel's force feedback follows)
 };

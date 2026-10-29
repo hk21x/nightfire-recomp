@@ -15,5 +15,9 @@ float FovScale();             // fov_percent as a factor, 0.5 to 1.5
 bool MenuUp();
 void MenuMouse(int port, input::Pad& p);
 void MouseAsStick();
-int GunStyle();       // Driving.xbe on a mounted gun: its controller style (0-7); -1 in the car, on foot, in a menu  // default.xbe: after its pad reader (src/game/mouse.cpp)  // GameInfo::pad  // no EA and MGM logo movies at boot (HideFile)
+int GunStyle();
+bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound (src/common/buttons.cpp)
+void RefreshButtons();  // each poll
+bool MenuKeys();  // the menu up shows Enter and Backspace for A and B (not a level's pause, whose controls page
+                  // names the keys played)       // Driving.xbe on a mounted gun: its controller style (0-7); -1 in the car, on foot, in a menu  // default.xbe: after its pad reader (src/game/mouse.cpp)  // GameInfo::pad  // no EA and MGM logo movies at boot (HideFile)
 }  // namespace nf
