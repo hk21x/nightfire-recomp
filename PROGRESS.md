@@ -28,6 +28,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Icon, README, launcher name (pc-features)
+
+- Harry's NightFire PC Port artwork: the round logo as launcher/icon.ico (16 to 256 px; the launcher's and both
+  exes' icon), the wide one as the README's banner (docs/img/nightfire-pc-port.webp, 1280x720).
+- README rewritten from EoN's: supported release (both SHA-1s), launcher and source builds, PC Settings, on-foot and
+  driving keys, features, status, troubleshooting, credits (Sour Gummy, OFL).
+- launcher.bat still had the template's short name (Game): now NightFire, so it copies NightFireLauncher.exe.
+
 ### 2026-10-29 - Mission loading screens whole on Windows (pc-features; sdk 8acd824)
 
 - Harry's F3 capture of a Driving.xbe loading screen (left half black): the picture is 64x64 P8 tiles on stage 3,
