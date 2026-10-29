@@ -13,7 +13,8 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - SDK: the fork's main at 8acd824 (2026-10-29: vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
-  2D, ultrawide and field of view; to be tried on Windows
+  2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
+  work, ultrawide and keypads still to check
 - Smoke: scripts/smoke.sh, title -> START -> Driving.xbe's Paris mission, about 4 minutes
 
 ## Disc
@@ -27,6 +28,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-29 - Harry's Windows checks
+
+- Confirmed on Windows: mission loading screens whole (sdk 8acd824), PC Settings (resolution text and applying),
+  mounted guns with the mouse, achievements, the icon, the Quit game button (F1), driving at 60 frames a second
+  (the vertex buffer wait costs nothing seen).
+- Still to check: keypads with the left mouse button / Enter, ultrawide.
+- Next: the first release (notes, launcher run, GitHub release), then polish (Hide HUD, modern button pictures,
+  PC Settings in the pause menu, Quit Game in the game's menu, mouse prompts in the driving menus).
 
 ### 2026-10-29 - Icon, README, launcher name (pc-features)
 
