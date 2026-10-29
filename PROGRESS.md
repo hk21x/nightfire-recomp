@@ -28,6 +28,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - PC Settings: display mode, resolution, vertical sync, frame cap (pc-features)
+
+- Harry: add display mode, resolution, VSync and the frame cap to the page. Eleven rows do not fit AV's ten, so the
+  page is now made from AV's records (nf::PcPage): its page widget, title, prompt line, help box and pictures kept, its
+  rows dropped, ours stacked 24 apart from y 80 from three templates (the music slider with its grey track, the
+  subtitles choice, the Restore Defaults button); focus moves by position. Choices carry their values (Display Mode
+  the runtime's DisplayMode numbers; Resolution "Desktop" 0 and the monitor's sizes 1.., as the settings window
+  lists them; Frame Cap 30, 60, 120, 144, 240, Unlimited). Kept: the settings file, and ApplyDisplay when the mode,
+  size or aspect changed. Headless: Frame Cap 60 -> 120 and Display Mode Borderless -> Fullscreen kept; the Edit
+  Codename route still opens it. Smoke OK.
+
 ### 2026-10-29 - PC Settings as a page of the game's own menus (pc-features)
 
 - Harry: the PC settings in the game's menus, as an option of Edit Codename (Codenames, a profile, its list).

@@ -20,7 +20,9 @@
 // arithmetic wraps into readable memory and the copy's would not: the copy is used only for a real index.
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <cstring>
+#include <string>
 #include <mutex>
 #include <vector>
 
@@ -30,6 +32,16 @@
 #include "kernel/kernel.h"
 #include "kernel/memory.h"
 #include "xdk/hle.h"
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+#endif
 
 namespace nf {
 extern uint32_t fov_percent;
@@ -42,7 +54,7 @@ using kernel::W32;
 constexpr uint32_t kPage = 0x4000FC10;
 constexpr uint32_t kFov = 0x1000FC11, kMouse = 0x1000FC12, kInvert = 0x1000FC13, kSkip = 0x1000FC14,
                    kSharp = 0x1000FC15, kAspect = 0x1000FC16, kMore = 0x1000FC17;
-constexpr uint32_t kHidden[] = {0x1000FC18, 0x1000FC19, 0x1000FC1A};
+constexpr uint32_t kDisplay = 0x1000FC1B, kResolution = 0x1000FC1C, kVsync = 0x1000FC1D, kCap = 0x1000FC1E;
 constexpr uint32_t kHelpBox = 0x10000225;
 constexpr uint32_t kSetById = 0x72820, kGoTo = 0x92C40, kSetWidget = 0x72630;
 constexpr uint32_t kMenuContext = 0x25F1D0, kContextSize = 0x1D8;
@@ -57,20 +69,27 @@ uint32_t GuestString(const char* s) {
     return va;
 }
 
+enum Kind { kSliderRow, kChoiceRow, kButtonRow };
 struct Row {
     uint32_t id;
+    Kind kind;
     const char* label;
     const char* help;
 };
 constexpr Row kRows[] = {
-    {kFov, "Field of View", "How wide the view is, on foot and driving. The game's is in the middle."},
-    {kMouse, "Mouse Sensitivity", "How far the view turns for the mouse's movement."},
-    {kInvert, "Invert Mouse", "Moving the mouse forward looks down."},
-    {kSkip, "Skip Intro Movies", "Starts without the EA and MGM logo movies."},
-    {kSharp, "Sharp Text", "Draws the text and HUD pictures sharp at high resolutions."},
-    {kAspect, "Aspect Ratio", "Auto follows the screen; Fill widens the view to an ultrawide screen."},
-    {kMore, "More Settings", "Display, sound, controls and the rest in the settings window."},
+    {kFov, kSliderRow, "Field of View", "How wide the view is, on foot and driving. The game's is in the middle."},
+    {kMouse, kSliderRow, "Mouse Sensitivity", "How far the view turns for the mouse's movement."},
+    {kInvert, kChoiceRow, "Invert Mouse", "Moving the mouse forward looks down."},
+    {kSkip, kChoiceRow, "Skip Intro Movies", "Starts without the EA and MGM logo movies."},
+    {kSharp, kChoiceRow, "Sharp Text", "Draws the text and HUD pictures sharp at high resolutions."},
+    {kAspect, kChoiceRow, "Aspect Ratio", "Auto follows the screen; Fill widens the view to an ultrawide screen."},
+    {kDisplay, kChoiceRow, "Display Mode", "A window, a borderless window over the screen, or the screen itself."},
+    {kResolution, kChoiceRow, "Resolution", "The window's or the screen's size; Desktop is the screen's own."},
+    {kVsync, kChoiceRow, "Vertical Sync", "Frames shown with the screen's refresh: no tearing."},
+    {kCap, kChoiceRow, "Frame Cap", "The most frames a second drawn."},
+    {kMore, kButtonRow, "More Settings", "Graphics, sound, controls and the rest in the settings window."},
 };
+constexpr int16_t kFirstY = 80, kRowStep = 24;  // AV's rows are 28 apart from 86: eleven need it closer
 
 uint32_t Str(const char* s) {
     static std::vector<std::pair<const char*, uint32_t>> made;
@@ -98,22 +117,87 @@ void Slider(X86Context& ctx, uint32_t player, uint32_t id, uint32_t value) {
     SetById(ctx, player, id, 0x69, 0);
     SetById(ctx, player, id, 0x2E, value);
 }
-void Choice(X86Context& ctx, uint32_t player, uint32_t id, std::initializer_list<const char*> items, uint32_t index) {
+// a choice's items and their values (b), which 0x1E selects by and 0x35 gives back
+void Choice(X86Context& ctx, uint32_t player, uint32_t id, const std::vector<std::pair<const char*, uint32_t>>& items,
+            uint32_t value) {
     SetById(ctx, player, id, 0x17, 0);
-    uint32_t value = 0;  // each choice's value (b), which 0x1E selects by and 0x35 gives back
-    for (const char* s : items) SetById(ctx, player, id, 0x10, Str(s), value++);
-    SetById(ctx, player, id, 0x1E, index);
+    for (auto& [text, v] : items) SetById(ctx, player, id, 0x10, Str(text), v);
+    SetById(ctx, player, id, 0x1E, value);
 }
+std::vector<std::pair<const char*, uint32_t>> Numbered(std::initializer_list<const char*> items) {
+    std::vector<std::pair<const char*, uint32_t>> v;
+    for (const char* s : items) v.push_back({s, uint32_t(v.size())});
+    return v;
+}
+
+// the monitor's sizes, widest first (as the settings window lists them), Desktop first; value i+1 the ith
+struct Size {
+    uint32_t w, h;
+};
+std::vector<Size> Sizes() {
+    std::vector<Size> sizes;
+#ifdef _WIN32
+    HMONITOR mon = static_cast<HMONITOR>(app::Monitor());
+    MONITORINFOEXW mi{};
+    mi.cbSize = sizeof(mi);
+    if (GetMonitorInfoW(mon, &mi)) {
+        DEVMODEW dm{};
+        dm.dmSize = sizeof(dm);
+        for (DWORD i = 0; EnumDisplaySettingsW(mi.szDevice, i, &dm); i++) {
+            if (dm.dmBitsPerPel < 32 || dm.dmPelsHeight < 480) continue;
+            Size z{dm.dmPelsWidth, dm.dmPelsHeight};
+            if (std::none_of(sizes.begin(), sizes.end(), [&](const Size& o) { return o.w == z.w && o.h == z.h; }))
+                sizes.push_back(z);
+        }
+    }
+    std::sort(sizes.begin(), sizes.end(),
+              [](const Size& a, const Size& b) { return a.w != b.w ? a.w > b.w : a.h > b.h; });
+#endif
+    if (sizes.size() > 24) sizes.resize(24);  // the choice's list (the largest)
+    return sizes;
+}
+std::vector<Size>& ShownSizes() {
+    static std::vector<Size> v;
+    return v;
+}
+const char* SizeText(Size z) {
+    static std::vector<std::string> kept;
+    char b[32];
+    std::snprintf(b, sizeof b, "%u x %u", z.w, z.h);
+    for (const std::string& k : kept)
+        if (k == b) return k.c_str();
+    kept.push_back(b);
+    return kept.back().c_str();
+}
+constexpr uint32_t kCaps[] = {30, 60, 120, 144, 240, 0};
 
 void Enter(X86Context& ctx, uint32_t player) {
     const app::Settings& s = app::Get();
     Slider(ctx, player, kFov, FovStep());
     Slider(ctx, player, kMouse, MouseStep());
-    Choice(ctx, player, kInvert, {"Off", "On"}, s.mouse_invert_y ? 1 : 0);
-    Choice(ctx, player, kSkip, {"Off", "On"}, nf::skip_intro ? 1 : 0);
-    Choice(ctx, player, kSharp, {"Off", "On"}, s.sharp_2d ? 1 : 0);
-    Choice(ctx, player, kAspect, {"Auto", "4:3", "16:9", "Fill"}, std::min<uint32_t>(s.aspect, 3));
-    for (uint32_t id : kHidden) SetById(ctx, player, id, 0x2B, 1);
+    Choice(ctx, player, kInvert, Numbered({"Off", "On"}), s.mouse_invert_y ? 1 : 0);
+    Choice(ctx, player, kSkip, Numbered({"Off", "On"}), nf::skip_intro ? 1 : 0);
+    Choice(ctx, player, kSharp, Numbered({"Off", "On"}), s.sharp_2d ? 1 : 0);
+    Choice(ctx, player, kAspect, Numbered({"Auto", "4:3", "16:9", "Fill"}), std::min<uint32_t>(s.aspect, 3));
+    using app::DisplayMode;
+    Choice(ctx, player, kDisplay,
+           {{"Window", uint32_t(DisplayMode::Windowed)}, {"Borderless", uint32_t(DisplayMode::Borderless)},
+            {"Fullscreen", uint32_t(DisplayMode::Fullscreen)}},
+           uint32_t(s.display_mode));
+    ShownSizes() = Sizes();
+    std::vector<std::pair<const char*, uint32_t>> sizes = {{"Desktop", 0}};
+    uint32_t size = 0;
+    for (size_t i = 0; i < ShownSizes().size(); i++) {
+        Size z = ShownSizes()[i];
+        sizes.push_back({SizeText(z), uint32_t(i + 1)});
+        if (z.w == s.width && z.h == s.height) size = uint32_t(i + 1);
+    }
+    Choice(ctx, player, kResolution, sizes, size);
+    Choice(ctx, player, kVsync, Numbered({"Off", "On"}), s.vsync ? 1 : 0);
+    uint32_t cap = 1;
+    for (uint32_t i = 0; i < std::size(kCaps); i++)
+        if (kCaps[i] == s.fps_cap) cap = i;
+    Choice(ctx, player, kCap, Numbered({"30", "60", "120", "144", "240", "Unlimited"}), cap);
     LOGR("nightfire: PC Settings page entered");
 }
 
@@ -122,6 +206,9 @@ void Keep(X86Context& ctx, uint32_t player) {
     uint32_t invert = SetById(ctx, player, kInvert, 0x35, 0) & 0xFF, skip = SetById(ctx, player, kSkip, 0x35, 0) & 0xFF;
     uint32_t sharp = SetById(ctx, player, kSharp, 0x35, 0) & 0xFF;
     uint32_t aspect = SetById(ctx, player, kAspect, 0x35, 0) & 0xFF;
+    uint32_t display = SetById(ctx, player, kDisplay, 0x35, 0) & 0xFF;
+    uint32_t size = SetById(ctx, player, kResolution, 0x35, 0) & 0xFF;
+    uint32_t vsync = SetById(ctx, player, kVsync, 0x35, 0) & 0xFF, cap = SetById(ctx, player, kCap, 0x35, 0) & 0xFF;
     std::lock_guard<std::recursive_mutex> lock(app::UiLock());
     app::Settings& s = app::Get();
     nf::fov_percent = 50 + std::min(fov, 20u) * 5;
@@ -129,13 +216,21 @@ void Keep(X86Context& ctx, uint32_t player) {
     s.mouse_invert_y = invert == 1;
     nf::skip_intro = skip == 1;
     s.sharp_2d = sharp == 1;
-    bool display = s.aspect != std::min(aspect, 3u);
+    uint32_t w = 0, h = 0;
+    if (size >= 1 && size <= ShownSizes().size()) w = ShownSizes()[size - 1].w, h = ShownSizes()[size - 1].h;
+    app::DisplayMode mode = display <= 2 ? app::DisplayMode(display) : s.display_mode;
+    bool apply = s.aspect != std::min(aspect, 3u) || s.display_mode != mode || s.width != w || s.height != h;
     s.aspect = std::min(aspect, 3u);
+    s.display_mode = mode;
+    s.width = w, s.height = h;
+    s.vsync = vsync == 1;
+    s.fps_cap = kCaps[std::min<uint32_t>(cap, std::size(kCaps) - 1)];
     app::Save();
-    if (display) app::ApplyDisplay();
+    if (apply) app::ApplyDisplay();
     LOGR("nightfire: PC Settings kept: field of view %u%%, mouse %u%%, invert %d, skip intro %d, sharp text %d, "
-         "aspect %u",
-         nf::fov_percent, s.mouse_sensitivity, s.mouse_invert_y, nf::skip_intro, s.sharp_2d, s.aspect);
+         "aspect %u, display %u, %ux%u, vsync %d, cap %u",
+         nf::fov_percent, s.mouse_sensitivity, s.mouse_invert_y, nf::skip_intro, s.sharp_2d, s.aspect,
+         uint32_t(s.display_mode), s.width, s.height, s.vsync, s.fps_cap);
 }
 
 // Edit Codename's list with our entry: the game's seven entries as they are now (it changes Save Codename's label as
@@ -193,28 +288,105 @@ void OpenPcPage(X86Context& ctx, uint32_t player) {
     ctx.eax = eax;
 }
 
-// the ids the menu file's clone of AV Options gets (src/game/pc_settings_item.cpp): AV's, ours, and the labels
-uint32_t PcPageId(uint32_t av) {
-    switch (av) {
-        case 0x40000031: return kPage;
-        case 0x10000135: return kFov;
-        case 0x10000134: return kMouse;
-        case 0x10000136: return kInvert;
-        case 0x1000019A: return kSkip;
-        case 0x10000198: return kSharp;
-        case 0x10000223: return kAspect;
-        case 0x100001A3: return kMore;
-        case 0x10000137: return kHidden[0];
-        case 0x10000138: return kHidden[1];
-        case 0x10000222: return kHidden[2];
-        default: return av;
+// the PC Settings page made from AV Options' records (a page in the menu file, src/game/pc_settings_item.cpp): its
+// page widget, title, prompt line, help box and pictures kept, its rows dropped, and ours made from its music slider
+// (with its grey track), subtitles choice and Restore Defaults button rows (each a label and a value widget with one
+// id), one under another; the focus moves between them by where they are
+std::vector<uint8_t> PcPage(const std::vector<uint8_t>& av, uint32_t (*record_size)(uint32_t)) {
+    auto get = [](const std::vector<uint8_t>& b, size_t at) {
+        uint32_t v;
+        std::memcpy(&v, &b[at], 4);
+        return v;
+    };
+    auto put = [](std::vector<uint8_t>& b, size_t at, uint32_t v) { std::memcpy(&b[at], &v, 4); };
+    auto put16 = [](std::vector<uint8_t>& b, size_t at, int16_t v) { std::memcpy(&b[at], &v, 2); };
+    constexpr uint32_t kOpWidget = 0xFFFFFFF9, kOpAttr = 0xFFFFFFF6, kOpFocus = 0xFFFFFFF4;
+    // the page record, then groups: a widget record and the records after it up to the next
+    const size_t head = record_size(get(av, 0));
+    struct Group {
+        uint32_t id, type;
+        int16_t y;
+        std::vector<uint8_t> bytes;
+    };
+    std::vector<Group> groups;
+    for (size_t p = head; p + 4 <= av.size();) {
+        uint32_t op = get(av, p), n = record_size(op);
+        if (!n) break;
+        if (op == kOpWidget) {
+            int16_t y;
+            std::memcpy(&y, &av[p + 0xC], 2);
+            groups.push_back({get(av, p + 4), av[p + 8], y, {}});
+        }
+        if (!groups.empty()) groups.back().bytes.insert(groups.back().bytes.end(), av.begin() + p, av.begin() + p + n);
+        p += n;
     }
-}
-const char* PcPageLabel(uint32_t id) {
-    if (id == kPage) return "PC Settings";
-    for (const Row& r : kRows)
-        if (r.id == id) return r.label;
-    return nullptr;
+    auto find = [&](uint32_t id, uint32_t type) -> const Group* {
+        for (const Group& g : groups)
+            if (g.id == id && g.type == type) return &g;
+        return nullptr;
+    };
+    const Group *slider_label = find(0x10000135, 5), *slider = find(0x10000135, 10);
+    const Group *choice_label = find(0x10000136, 5), *choice = find(0x10000136, 9);
+    const Group *button = find(0x100001A3, 1), *page = find(0x40000031, 13);
+    const Group* track = nullptr;  // a slider's grey track, behind its bar (AV's at 86 and 114)
+    for (const Group& g : groups)
+        if (g.id == 0x10000001 && g.y == 86) track = &g;
+    if (!track || !slider_label || !slider || !choice_label || !choice || !button || !page) return {};
+    // a group's texts (attribute 0x18) as ours, its id and row
+    auto made = [&](const Group& g, uint32_t id, int16_t y, const char* text) {
+        std::vector<uint8_t> b = g.bytes;
+        put(b, 4, id);
+        put16(b, 0xC, y);
+        for (size_t p = 0; p + 4 <= b.size();) {
+            uint32_t op = get(b, p), n = record_size(op);
+            if (!n) break;
+            if (op == kOpAttr && b[p + 4] == 0x18 && text) {
+                put(b, p + 5, Str(text));
+                put(b, p + 9, 0);
+            }
+            p += n;
+        }
+        return b;
+    };
+    std::vector<uint8_t> out(av.begin(), av.begin() + head);
+    put(out, 4, kPage);
+    // the page widget, its first focus our first row
+    std::vector<uint8_t> pg = page->bytes;
+    put(pg, 4, kPage);
+    for (size_t p = 0; p + 4 <= pg.size();) {
+        uint32_t op = get(pg, p), n = record_size(op);
+        if (!n) break;
+        if (op == kOpFocus) put(pg, p + 0xC, kRows[0].id);
+        p += n;
+    }
+    out.insert(out.end(), pg.begin(), pg.end());
+    // what stays: the title (its text ours), the prompt line, the help box and the pictures
+    for (const Group& g : groups) {
+        bool title = g.id == 0x10000001 && g.y == 40, keep = (g.id == 0x10000001 && (g.y == 419 || g.y == 38)) ||
+                                                         g.id == 0x10000225 || g.id == 0x10000224;
+        if (title) {
+            std::vector<uint8_t> t = made(g, g.id, g.y, "PC Settings");
+            out.insert(out.end(), t.begin(), t.end());
+        } else if (keep) {
+            out.insert(out.end(), g.bytes.begin(), g.bytes.end());
+        }
+    }
+    int16_t y = kFirstY;
+    for (const Row& r : kRows) {
+        std::vector<uint8_t> a, b;
+        if (r.kind == kSliderRow) {
+            std::vector<uint8_t> t = made(*track, track->id, y, nullptr);
+            out.insert(out.end(), t.begin(), t.end());
+            a = made(*slider_label, r.id, y, r.label), b = made(*slider, r.id, y, nullptr);
+        }
+        if (r.kind == kChoiceRow) a = made(*choice_label, r.id, y, r.label), b = made(*choice, r.id, y, nullptr);
+        if (r.kind == kButtonRow) a = made(*button, r.id, y, r.label);
+        out.insert(out.end(), a.begin(), a.end());
+        out.insert(out.end(), b.begin(), b.end());
+        y = int16_t(y + kRowStep);
+    }
+    put(out, 0x11, uint32_t(out.size() - head));  // the page's body size
+    return out;
 }
 }  // namespace nf
 

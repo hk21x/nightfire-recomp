@@ -21,8 +21,7 @@
 namespace nf {
 bool PcPageMessage(X86Context& ctx, uint32_t player, uint32_t widget, uint32_t msg, uint32_t arg);  // pc_settings_page
 void OpenPcPage(X86Context& ctx, uint32_t player);
-uint32_t PcPageId(uint32_t av);
-const char* PcPageLabel(uint32_t id);
+std::vector<uint8_t> PcPage(const std::vector<uint8_t>& av, uint32_t (*record_size)(uint32_t));
 }  // namespace nf
 
 namespace {
@@ -35,8 +34,7 @@ constexpr uint32_t kSetWidget = 0x72630;   // cdecl (widget, message, a, b)
 constexpr uint32_t kMainMenu = 0x40000002, kFrontVar = 0x80000002;
 constexpr uint32_t kNightFire = 0x10000002, kMultiplayer = 0x10000003, kCodenames = 0x10000004;
 constexpr uint32_t kPcItem = 0x1000FC01;   // ours: no record or code of the game uses it
-constexpr uint32_t kAvPage = 0x40000031, kAvTitle = 0x2BB, kPcPage = 0x4000FC10;  // AV Options, its title text
-constexpr uint32_t kOpFocus = 0xFFFFFFF4;  // a page's first focus: +0xC the widget
+constexpr uint32_t kAvPage = 0x40000031;  // AV Options: the PC Settings page is made from it
 constexpr uint32_t kOpPage = 0xFFFFFFF0, kOpWidget = 0xFFFFFFF9, kOpAttr = 0xFFFFFFF6, kOpEnd = 0xFFFFFFF2;
 constexpr uint8_t kMsgText = 0x18;
 constexpr uint32_t kActivate = 0x4B;       // a widget message: A on it
@@ -129,33 +127,16 @@ uint32_t Patched(uint32_t stream) {
     for (int i = 0; i < 3; i++) Put16(b, item[i] + 0xC, kRowY[i]);
     Put32(b, page + 0x11, Get32(b, page + 0x11) + uint32_t(ours.size()));  // the page's body size
     b.insert(b.begin() + codenames_end, ours.begin(), ours.end());
-    // the PC Settings page: AV Options' page cloned after it, its ids and labels ours (src/game/pc_settings_page.cpp)
+    // the PC Settings page, made from AV Options' and put after it (src/game/pc_settings_page.cpp)
     for (size_t p = 4; p + 4 <= b.size();) {
         uint32_t op = Get32(b, p), n = RecordSize(op);
         if (!n) break;
         if (op == kOpPage && Get32(b, p + 4) == kAvPage && Get32(b, p + 8) == kFrontVar && b[p + 0x10] == 0) {
-            std::vector<uint8_t> page_copy(b.begin() + p, b.begin() + p + n + Get32(b, p + 0x11));
-            uint32_t widget = 0;
-            for (size_t q = 0; q + 4 <= page_copy.size();) {
-                uint32_t o = Get32(page_copy, q), m = RecordSize(o);
-                if (!m) break;
-                if (o == kOpPage) Put32(page_copy, q + 4, nf::PcPageId(Get32(page_copy, q + 4)));
-                if (o == kOpWidget) {
-                    widget = nf::PcPageId(Get32(page_copy, q + 4));
-                    Put32(page_copy, q + 4, widget);
-                }
-                if (o == kOpFocus) Put32(page_copy, q + 0xC, nf::PcPageId(Get32(page_copy, q + 0xC)));
-                if (o == kOpAttr && page_copy[q + 4] == kMsgText) {
-                    const char* label = Get32(page_copy, q + 9) == kAvTitle ? nf::PcPageLabel(kPcPage)
-                                                                             : nf::PcPageLabel(widget);
-                    if (label) {
-                        Put32(page_copy, q + 5, GuestString(label));
-                        Put32(page_copy, q + 9, 0);
-                    }
-                }
-                q += m;
-            }
-            b.insert(b.begin() + p + page_copy.size(), page_copy.begin(), page_copy.end());
+            std::vector<uint8_t> av(b.begin() + p, b.begin() + p + n + Get32(b, p + 0x11));
+            std::vector<uint8_t> page_copy = nf::PcPage(av, RecordSize);
+            if (page_copy.empty()) break;  // not laid out as expected: no page
+            p += av.size();
+            b.insert(b.begin() + p, page_copy.begin(), page_copy.end());
             LOGR("nightfire: PC Settings page made from AV Options' (%zu bytes)", page_copy.size());
             break;
         }
