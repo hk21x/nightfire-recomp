@@ -29,6 +29,25 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Modern button pictures, Hide HUD, scope on ultrawide, the driving exe quarantined (pc-features; sdk ed5e147)
+
+- Modern button pictures (modern_buttons, on): a controller's prompts as today's pad (EoN's shapes, sized by each
+  box): coloured A B X Y on dark discs, LB/RB for White/Black, LT/RT, Menu/View, d-pads, sticks; Driving.xbe's P8
+  icons take the palette's nearest colours, its LT and RT boxes now the caps' full height (rows 111-130, 152-172).
+  Headless: main menu, the bot match's CONTROLS tab, Enemies Vanquished's CONTROLS tab.
+- Hide HUD (hide_hud): on foot each view's 2D sprite list (0xD9410 from the 2D pass 0xDAC20, the views 0x1F661C) is
+  not drawn while no menu is up; driving, the HUD draw 0xE1970 (ecx [0x23F44C]) is skipped in play. Headless: bot
+  match and Enemies Vanquished clean, their pause screens drawn.
+- Harry's Deep Descent "crash": Windows Defender quarantined NightfireDriving.exe (Behavior:Win32/DefenseEvasion.A!ml),
+  so the handover found no exe and closed. SDK 6eb3183: the new exe is no longer started suspended and resumed (the
+  handover event is named by the old instance, --handover=pid); a missing exe gets a message box.
+- Harry's scope capture on 21:9: the sight's black bars are textured (32x32, x 0-81 and 559-640, full height), so
+  they were squeezed and the widened view showed past them. SDK ed5e147: GameInfo::edge_bars (NightFire on) keeps
+  such a bar on the frame's edge, as an untextured fill. Windows renderers only: Harry to check.
+- Gate passed (EoN, PGR2, PGR1 smoke, PGR1's frame check); fork main fast-forwarded to ed5e147.
+- Pause menu PC Settings: in progress (the level's menu file dumped in .local/pause_dump, frame 13140, stream
+  834CC5D0).
+
 ### 2026-10-29 - Harry's Windows checks
 
 - Confirmed on Windows: mission loading screens whole (sdk 8acd824), PC Settings (resolution text and applying),

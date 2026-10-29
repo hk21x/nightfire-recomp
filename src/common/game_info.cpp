@@ -215,6 +215,7 @@ const app::GameInfo app::kGame = {
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = nf::AchievementSet(), // conditions on default.xbe's Results page (src/common/achievement_set.cpp)
     .squeeze_screen_programs = true,      // ultrawide: Driving.xbe draws its HUD and menus through vertex programs
+    .edge_bars = true,                    // ultrawide: the sniper scope's black side bars reach the screen's sides
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
     .hide_file = HideFile,                // skip_intro
