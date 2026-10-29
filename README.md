@@ -106,7 +106,8 @@ settings window (graphics, renderer, controls) at any time; changes are saved at
 | Vision mode | V or Tab |
 | Pause | Esc or P |
 
-With a scope or a launcher the mouse turns at a quarter of its speed, and a guided missile steers with the mouse.
+With a scope or a launcher the mouse turns at a quarter of its speed and the mouse wheel zooms, and a guided missile
+steers with the mouse.
 Keypads (door codes) take the left mouse button or Enter. In the menus the mouse wheel scrolls, Enter selects and
 Backspace goes back.
 
@@ -172,6 +173,7 @@ right button zooms and R reloads.
   [ACHIEVEMENTS.md](ACHIEVEMENTS.md).
 - **Hide HUD** - Clears the HUD on foot and in the driving missions, for screenshots (`hide_hud`, F1; at once). The
   pause screens and menus stay.
+- **Quit Game** - The main menu has a Quit Game item, and the settings window (F1) has a Quit game button.
 - **Skip Intro Movies** - `skip_intro = true` starts without the EA and MGM logo movies.
 - **Saves** - Kept on an emulated hard disk beside the exe.
 

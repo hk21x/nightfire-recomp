@@ -29,6 +29,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Scope zoom on the wheel, Quit Game in the main menu (pc-features)
+
+- Mouse wheel through a scope: while player 1's view is zoomed in (its angle under 0.9 of 60 degrees: nf::Zoomed, the
+  look code's own test, now src/game/mouse.cpp's ViewZoom) the wheel presses the d-pad's up and down, the NightFire
+  style's gadget/zoom (the keyboard plays that style), up a notch away; out of a scope it cycles the weapon as before.
+  Not tried in a scope headless (no sniper there): which way zooms in is Harry's to check.
+- Quit Game: a fifth main menu item (0x1000FC05, the Codenames item's records cloned as PC Settings'), the five rows
+  26 apart from 222 to 326 (two rows up ran into the logo); A calls app::Quit, its help line "Leave the game."
+  Headless: down four, A: "quit asked for", Exit (0).
+- Driving menus' prompts: already Enter for Select in the pause and on Mission Failed (page 5; headless, keyboard):
+  the 2026-10-29 fix covers them; nothing to change.
+
 ### 2026-10-29 - The launcher's update prompts (pc-features; sdk 0b5ff49)
 
 - Fork main 0b5ff49 (launcher-update, merged by another session after its gate; launcher only): a release launcher

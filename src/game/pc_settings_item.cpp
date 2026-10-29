@@ -1,5 +1,5 @@
-// "PC Settings" in the game's own main menu (default.xbe): a fourth item under NightFire / Multiplayer / Codenames
-// that opens the settings overlay.
+// "PC Settings" and "Quit Game" in the game's own main menu (default.xbe): a fourth and fifth item under NightFire /
+// Multiplayer / Codenames, the first opening the PC Settings page, the second leaving the game (app::Quit).
 //
 // Eurocom's menus are data: one menu file sits in memory as a record stream ([0x25FB08]), and the builder 0x93960
 // makes the widgets of a page from it. The main menu is page 0x40000002 (var 0x80000002) in the front end's file;
@@ -38,11 +38,12 @@ constexpr uint32_t kSetWidget = 0x72630;   // cdecl (widget, message, a, b)
 constexpr uint32_t kMainMenu = 0x40000002, kFrontVar = 0x80000002;
 constexpr uint32_t kNightFire = 0x10000002, kMultiplayer = 0x10000003, kCodenames = 0x10000004;
 constexpr uint32_t kPcItem = 0x1000FC01;   // ours: no record or code of the game uses it
+constexpr uint32_t kQuitItem = 0x1000FC05;
 constexpr uint32_t kAvPage = 0x40000031;  // AV Options: the PC Settings page is made from it
 constexpr uint32_t kOpPage = 0xFFFFFFF0, kOpWidget = 0xFFFFFFF9, kOpAttr = 0xFFFFFFF6, kOpEnd = 0xFFFFFFF2;
 constexpr uint8_t kMsgText = 0x18;
 constexpr uint32_t kActivate = 0x4B;       // a widget message: A on it
-constexpr int16_t kRowY[4] = {230, 262, 294, 326};  // the three items moved up a row, ours below them
+constexpr int16_t kRowY[5] = {222, 248, 274, 300, 326};  // five rows 26 apart (the three were 32) to the same last row, clear of the logo
 constexpr uint32_t kPausePage = 0x4000004B, kPauseItem = 0x10000028, kPauseChoices = 6;  // the choices list's index
 constexpr uint8_t kMsgAddText = 0x11;      // a list's entry: a text handle
 constexpr uint32_t kMsgRead = 0x34;        // the list's choice
@@ -190,20 +191,25 @@ uint32_t Patched(uint32_t stream) {
         LOGR("nightfire: PC Settings added to the pause screen (menu file %08X, %u bytes)", stream, at);
         return made;
     }
-    // our item: the Codenames item's records with our id, row and label
-    std::vector<uint8_t> ours(b.begin() + item[2], b.begin() + codenames_end);
-    Put32(ours, 4, kPcItem);
-    Put16(ours, 0xC, kRowY[3]);
-    static const uint32_t label = GuestString("PC Settings");
-    for (size_t p = 0; p + 4 <= ours.size();) {
-        uint32_t op = Get32(ours, p), n = RecordSize(op);
-        if (!n) break;
-        if (op == kOpAttr && ours[p + 4] == kMsgText) {
-            Put32(ours, p + 5, label);  // a: a string used as it is
-            Put32(ours, p + 9, 0);
+    // our items: the Codenames item's records with our id, row and label
+    auto clone = [&](uint32_t id, int16_t y, uint32_t label) {
+        std::vector<uint8_t> it(b.begin() + item[2], b.begin() + codenames_end);
+        Put32(it, 4, id);
+        Put16(it, 0xC, y);
+        for (size_t p = 0; p + 4 <= it.size();) {
+            uint32_t op = Get32(it, p), n = RecordSize(op);
+            if (!n) break;
+            if (op == kOpAttr && it[p + 4] == kMsgText) {
+                Put32(it, p + 5, label);  // a: a string used as it is
+                Put32(it, p + 9, 0);
+            }
+            p += n;
         }
-        p += n;
-    }
+        return it;
+    };
+    static const uint32_t pc_label = GuestString("PC Settings"), quit_label = GuestString("Quit Game");
+    std::vector<uint8_t> ours = clone(kPcItem, kRowY[3], pc_label), quit = clone(kQuitItem, kRowY[4], quit_label);
+    ours.insert(ours.end(), quit.begin(), quit.end());
     for (int i = 0; i < 3; i++) Put16(b, item[i] + 0xC, kRowY[i]);
     Put32(b, page + 0x11, Get32(b, page + 0x11) + uint32_t(ours.size()));  // the page's body size
     b.insert(b.begin() + codenames_end, ours.begin(), ours.end());
@@ -260,6 +266,13 @@ X86_FUNC(sub_0008E320) {
         ctx.esp += 4;
         return;
     }
+    if (widget && message == kActivate && R32(widget + 0x18) == kQuitItem) {
+        LOGR("nightfire: Quit Game from the main menu");
+        app::Quit();
+        ctx.eax = 1;
+        ctx.esp += 4;
+        return;
+    }
     if (!widget || message != kActivate || R32(widget + 0x18) != kPcItem) {
         __imp__sub_0008E320(ctx, base);
         return;
@@ -275,10 +288,11 @@ X86_EXTERN_FUNC(__imp__sub_000959E0);
 X86_FUNC(sub_000959E0) {
     uint32_t page = R32(ctx.esp + 4);
     __imp__sub_000959E0(ctx, base);
-    uint32_t focused = page ? R32(page + 0xAC) : 0, box = R32(kHelpBox);
-    if (!box || !focused || R32(focused + 0x18) != kPcItem) return;
-    static const uint32_t help = GuestString("Picture, controls and more for this PC.");
+    uint32_t focused = page ? R32(page + 0xAC) : 0, box = R32(kHelpBox), id = focused ? R32(focused + 0x18) : 0;
+    if (!box || (id != kPcItem && id != kQuitItem)) return;
+    static const uint32_t help = GuestString("Picture, controls and more for this PC."),
+                          quit_help = GuestString("Leave the game.");
     uint32_t eax = ctx.eax;
-    kernel::CallGuest(ctx, kSetWidget, {box, kMsgText, help, 0});
+    kernel::CallGuest(ctx, kSetWidget, {box, kMsgText, id == kQuitItem ? quit_help : help, 0});
     ctx.eax = eax;
 }

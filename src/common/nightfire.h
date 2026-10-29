@@ -21,6 +21,7 @@ std::vector<achievements::Def> AchievementSet();  // src/common/achievement_set.
 void MenuMouse(int port, input::Pad& p);
 void MouseAsStick();
 bool PlayerFree();  // default.xbe: Bond under the player's own control (not a keypad, a missile, a cutscene)
+bool Zoomed();  // default.xbe: player 1 looking through a scope or sight, zoomed in (src/game/mouse.cpp)
 int GunStyle();
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound (src/common/buttons.cpp)
 void RefreshButtons();  // each poll

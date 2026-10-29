@@ -35,6 +35,7 @@ constexpr uint32_t kCameras = 0x1F661C, kCamFov = 0x104, kCamZoom = 0xF4;  // th
 constexpr float kRadiansPerCount = 0.0008f;  // at 100% sensitivity: 36 degrees an inch at 800 counts an inch
 constexpr float kGameFov = 1.0471976f;       // the cameras' 60 degrees (0x25190's callers)
 constexpr float kZoomedScale = 0.25f;        // zoomed in (a scope, the rocket launcher's sight): a quarter as fast more
+constexpr float kZoomedBelow = 0.9f;  // the view's angle over the game's under which it is zoomed in
 constexpr float kHalfPi = 1.5707964f;          // the pitch is kept over a quarter turn (the camera's is pi/2 times it)
 constexpr uint32_t kUnset = 0x7FC0DEAD;      // a NaN: the turn as it was before the update, if it stays
 constexpr uint32_t kControls = 0x1FE6D0, kControlSize = 0x158;  // per player (0xDE720's)
@@ -75,6 +76,14 @@ bool Counts(float& x, float& y) {
     x *= 2400 * dt, y *= 2400 * dt;  // TakeMouse's rate (2400 counts a second at 100% is 1) back to counts
     return true;
 }
+
+// player 1's view angle over the game's 60 degrees: under kZoomedBelow a scope or sight is zoomed in
+float ViewZoom() {
+    uint32_t cam = kernel::R32(kCameras);
+    if (!cam) return 1.0f;
+    float divisor = GetF(cam + kCamZoom);
+    return std::clamp(GetF(cam + kCamFov) / (divisor > 0.01f ? divisor : 1.0f) / kGameFov, 0.02f, 2.0f);
+}
 }  // namespace
 
 X86_EXTERN_FUNC(__imp__sub_000A9CF0);
@@ -94,13 +103,8 @@ X86_FUNC(sub_000A9CF0) {
     if (!Counts(x, y)) return;
     kernel::G<uint8_t>(actor + kLooked) = 1;  // looking, as 0xB7610 marks the stick's: else the view eases back level
     if (x == 0 && y == 0) return;
-    uint32_t cam = kernel::R32(kCameras);
-    float zoom = 1.0f;
-    if (cam) {
-        float divisor = GetF(cam + kCamZoom);
-        zoom = std::clamp(GetF(cam + kCamFov) / (divisor > 0.01f ? divisor : 1.0f) / kGameFov, 0.02f, 2.0f);
-    }
-    bool zoomed = zoom < 0.9f;
+    float zoom = ViewZoom();
+    bool zoomed = zoom < kZoomedBelow;
     static bool was_zoomed = false;
     if (zoomed != was_zoomed) {
         was_zoomed = zoomed;
@@ -121,6 +125,7 @@ namespace nf {
 // Bond under the player's own control on foot (0xA9CF0 turned player 1 within two frames): not at a keypad, steering
 // a missile or a turret, in a cutscene
 bool PlayerFree() { return g_direct <= 2; }
+bool Zoomed() { return ViewZoom() < kZoomedBelow; }
 
 // after 0xDE720 filled the controls: where the mouse does not turn the player itself, it plays the right stick
 // (style 0's: slot 0 and 3 its x, 4 and 5 its y, -1 to 1)
