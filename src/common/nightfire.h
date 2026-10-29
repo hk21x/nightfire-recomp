@@ -3,6 +3,9 @@
 // levels; Driving.xbe: EA's front end and the driving levels)
 #include <cstdint>
 
+#include <vector>
+
+#include "core/achievements.h"
 #include "core/input.h"
 
 namespace nf {
@@ -13,6 +16,7 @@ float Ultrawide();            // how much wider than 16:9 the frame is shown, 1 
 float FovScale();             // fov_percent as a factor, 0.5 to 1.5
 // a menu has the controller (each exe's hooks.cpp): the mouse then plays A, B and the d-pad (MenuMouse)
 bool MenuUp();
+std::vector<achievements::Def> AchievementSet();  // src/common/achievement_set.cpp
 void MenuMouse(int port, input::Pad& p);
 void MouseAsStick();
 int GunStyle();

@@ -48,6 +48,10 @@ namespace {
 void Init() {
     if (const char* e = std::getenv("NF_SKIP_INTRO"); e && *e) nf::skip_intro = *e == '1';
     if (const char* e = std::getenv("NF_FOV"); e && *e) nf::fov_percent = uint32_t(std::atoi(e));
+    // every achievement's condition parses (a typo would leave it never met)
+    for (const achievements::Def& d : app::kGame.achievements)
+        if (std::string e = achievements::Check(d.condition); !e.empty())
+            LOGE("nightfire: achievement %s: %s", d.id, e.c_str());
     if (nf::skip_intro) LOGR("nightfire: the intro logos are skipped (skip_intro)");
 }
 
@@ -200,6 +204,7 @@ const app::GameInfo app::kGame = {
     .ui = nullptr,                        // ImGui drawing each frame
     .pad = nf::MenuMouse,                 // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
+    .achievements = nf::AchievementSet(), // conditions on default.xbe's Results page (src/common/achievement_set.cpp)
     .squeeze_screen_programs = true,      // ultrawide: Driving.xbe draws its HUD and menus through vertex programs
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
     .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise

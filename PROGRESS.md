@@ -28,6 +28,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Achievements (pc-features)
+
+- The progress map (agent, .local/progress_re.md; checked against Harry's decoded save and a faked Enemies Vanquished
+  handover, .local/launch_ev_done.bin): FINDINGS.md "Progress". Deltas on the profile cannot tell a codename load
+  from a completion (the profile is restored and the completion scored with no frame between), so each achievement is
+  the Results page with mode 6 and the level done, plus its own term.
+- src/common/achievement_set.cpp: the 12 missions, gold and platinum on any mission, gold and platinum on every
+  mission's best, any mission and Equinox on 00 Agent, every Bond Move in a mission (ACHIEVEMENTS.md). Driving.xbe
+  gets the list with a never-met condition (shown, not awarded).
+- Headless: the faked Enemies Vanquished handover unlocked Enemies Vanquished, Gold Standard and Shaken, Not Stirred
+  (Harry's gold there, its Bond Moves); title -> codename BOND -> mission list unlocked none. Smoke OK.
+
 ### 2026-10-29 - Driving font on Windows: replacements for linear textures (pc-features; sdk ed1796c)
 
 - Harry's car screenshot: the objective, timer and ammo still in EA's font, though they draw from the replaced

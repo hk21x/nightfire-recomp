@@ -47,3 +47,13 @@ game's own code and data, with its addresses).
 - **[game]** Driving.xbe's views: 0xE46D0 (thiscall: horizontal angle in degrees, aspect, near, far; EoN's 0x2111E0
   in x87), called only from 0x96EB0: angle = camera +0xB4 * 2 * [[0x1EBFF4]+0x58], times 1.25 and 16:9 with the
   widescreen byte [[0x1EBFF4]+0x4C]. Nothing culls by the view's sides (no EoN-style global frustum).
+
+## Progress (achievements)
+- **[game]** save.dat: a 0x1D-byte header ("KXS", size, key at +8), the rest XORed with (k | 0x80), k from the key
+  plus 0x49 a byte; bit-packed chunks (MSSN: the unlocked mask, each mission's best score and Bond Moves, the game
+  finished bit; BNUS: a 64-bit medal mask).
+- **[game]** default.xbe holds the profile in pieces: unlocked bytes 0x17C590 + 0x18 i, score records 0x17F198 +
+  0x3C i (medal targets +4..+0x10, best +0x30, this run +0x34), category stats 0x17E8F8 + 0xB8 i (target +0, this run
+  +8), medal bits 0x25D6E8/0x25D6EC, difficulty 0x1F65A8. Every completion is scored in default.xbe (driving ones
+  after the handover: launch data result +0x978, 0 done): the Results page 0x40000036, mode 6 at 0x17E544, the level
+  at 0x1F65C8.
