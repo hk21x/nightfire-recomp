@@ -16,8 +16,12 @@ bool MenuUp() {
     return hud && kernel::G<uint8_t>(hud + 0x2B0) != 0;
 }
 
-// EA's menus are a level's (Paused, whose CONTROLS tab names the keys played): the keys as played
-bool MenuKeys() { return false; }
+// the menus show Enter and Backspace for A and B, but for the pause's CONTROLS tab (the HUD's page +0x470: MISSION 0,
+// OBJECTIVES 1, CONTROLS 2, SCORE 3), whose lines name the keys played
+bool MenuKeys() {
+    uint32_t hud = kernel::R32(0x23F44C);
+    return MenuUp() && kernel::R32(hud + 0x470) != 2;
+}
 
 // the control map (0x1E455C): +4 its mode, 1 a mounted gun (data\control\povcfgN.def), 0 the car (drivecfg.def), 2 none
 // yet; +0xC the gun's style (the player's controller style)

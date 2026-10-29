@@ -28,6 +28,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Driving pause prompts: Enter for Select, the Scroll icon (pc-features)
+
+- Harry's car pause screenshot: Select showed the mouse (A's play key) and Scroll a stray mark. The atlas's d-pad
+  cross was two pictures (a disc with up and down lit at 220,117-239,136; arrow pieces with up and down lit at
+  222,137-241,156), boxed as one; now two. Driving.xbe's nf::MenuKeys: a menu up but the pause's CONTROLS tab (the
+  HUD's +0x470 == 2) shows Enter and Backspace. Headless car pause: "ENTER Select, ESC Continue, arrows Next and
+  Scroll". Smoke OK.
+
 ### 2026-10-29 - default.xbe's font from a real font: Sour Gummy Black (pc-features)
 
 - Harry asked for a real font in place of the upscale and picked Google's Sour Gummy Black (SIL OFL 1.1; the static
