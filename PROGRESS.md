@@ -45,6 +45,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   they were squeezed and the widened view showed past them. SDK ed5e147: GameInfo::edge_bars (NightFire on) keeps
   such a bar on the frame's edge, as an untextured fill. Windows renderers only: Harry to check.
 - Gate passed (EoN, PGR2, PGR1 smoke, PGR1's frame check); fork main fast-forwarded to ed5e147.
+- Harry on Windows: modern button pictures, Hide HUD and the scope on ultrawide all work.
 - Pause menu PC Settings: in progress (the level's menu file dumped in .local/pause_dump, frame 13140, stream
   834CC5D0).
 
