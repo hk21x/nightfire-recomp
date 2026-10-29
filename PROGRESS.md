@@ -28,6 +28,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - PC Settings: the resolution's text (pc-features)
+
+- Harry's screenshot: Resolution showed "WUff". The guest copies of the page's strings were found again by their host
+  pointer; the sizes' texts lived in a growing vector, so a new text could take an old one's address and get its copy.
+  Now by contents, the sizes' texts in a deque, and every string and the menu file copy in AllocHostContiguous memory
+  (AllocSystem's pages are not all readable by recompiled code). Smoke OK.
+
 ### 2026-10-29 - PC Settings: display mode, resolution, vertical sync, frame cap (pc-features)
 
 - Harry: add display mode, resolution, VSync and the frame cap to the page. Eleven rows do not fit AV's ten, so the

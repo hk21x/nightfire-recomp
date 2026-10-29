@@ -22,6 +22,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <deque>
 #include <string>
 #include <mutex>
 #include <vector>
@@ -63,8 +64,9 @@ constexpr uint32_t kTable = 0x17CEC8, kEntry = 24, kEntries = 7;
 constexpr uint32_t kLabelHandle = 0x0000FC01, kHelpHandle = 0x0100FC02;  // no text bank goes that far
 constexpr uint32_t kAvPicture = 0x3000125;
 
+// in memory past the title's, which the recompiled code reads as it is (AllocSystem's it may not: see ListCopy)
 uint32_t GuestString(const char* s) {
-    uint32_t n = uint32_t(std::strlen(s)) + 1, va = mem::AllocSystem(n);
+    uint32_t n = uint32_t(std::strlen(s)) + 1, va = mem::AllocHostContiguous(n, 16);
     std::memcpy(kernel::HostPtr(va), s, n);
     return va;
 }
@@ -91,8 +93,9 @@ constexpr Row kRows[] = {
 };
 constexpr int16_t kFirstY = 80, kRowStep = 24;  // AV's rows are 28 apart from 86: eleven need it closer
 
+// a string's guest copy, made once for each text (by its contents: a host pointer can be another string's later)
 uint32_t Str(const char* s) {
-    static std::vector<std::pair<const char*, uint32_t>> made;
+    static std::vector<std::pair<std::string, uint32_t>> made;
     for (auto& [k, v] : made)
         if (k == s) return v;
     uint32_t va = GuestString(s);
@@ -161,7 +164,7 @@ std::vector<Size>& ShownSizes() {
     return v;
 }
 const char* SizeText(Size z) {
-    static std::vector<std::string> kept;
+    static std::deque<std::string> kept;  // the texts stay where they are
     char b[32];
     std::snprintf(b, sizeof b, "%u x %u", z.w, z.h);
     for (const std::string& k : kept)

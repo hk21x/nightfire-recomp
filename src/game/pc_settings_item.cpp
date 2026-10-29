@@ -68,7 +68,7 @@ void Put32(std::vector<uint8_t>& b, size_t at, uint32_t v) { std::memcpy(&b[at],
 void Put16(std::vector<uint8_t>& b, size_t at, int16_t v) { std::memcpy(&b[at], &v, 2); }
 
 uint32_t GuestString(const char* s) {
-    uint32_t n = uint32_t(std::strlen(s)) + 1, va = mem::AllocSystem(n);
+    uint32_t n = uint32_t(std::strlen(s)) + 1, va = mem::AllocHostContiguous(n, 16);  // readable by the game's code
     std::memcpy(kernel::HostPtr(va), s, n);
     return va;
 }
@@ -142,7 +142,7 @@ uint32_t Patched(uint32_t stream) {
         }
         p += n;
     }
-    made = mem::AllocSystem(uint32_t(b.size()));
+    made = mem::AllocHostContiguous(uint32_t(b.size()), 16);  // past the title's memory, as the page's strings
     std::memcpy(kernel::HostPtr(made), b.data(), b.size());
     LOGR("nightfire: PC Settings added to the main menu (menu file %08X, %u bytes)", stream, at);
     return made;
