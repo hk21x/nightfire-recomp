@@ -84,7 +84,7 @@ if it crashes.
 
 ## Controls and Settings
 
-**PC Settings:** in the game's own menus, as the main menu's **PC Settings** item: field of view, mouse sensitivity
+**PC Settings:** in the game's own menus, as the main menu's **PC Settings** item and a choice on the pause screen: field of view, mouse sensitivity
 and invert, skip intro, sharp 2D, aspect, display mode, resolution, vsync and frame cap. **F1** opens the full
 settings window (graphics, renderer, controls) at any time; changes are saved at once to `settings.toml`.
 
@@ -146,6 +146,9 @@ right button zooms and R reloads.
 - **Clean Fonts** - The game's text, in both xbes, is redrawn at eight times the console's resolution from
   [Sour Gummy Black](https://fonts.google.com/specimen/Sour+Gummy), a close match for the game's own face, so it stays
   smooth at any resolution.
+- **Modern Button Pictures** - A controller's prompts show today's Xbox pad: A B X Y in the modern style, LB and RB for
+  the White and Black buttons, LT and RT, and the Menu and View buttons for Start and Back (`modern_buttons`, on by
+  default).
 - **Sharp Text and HUD** - The menus' and HUD's pictures are enlarged with sharp edges for high resolutions
   (`sharp_2d`, on by default).
 - **Shader Cache** - Compiled shaders are kept in `shadercache.bin`, so each is compiled once rather than in every
@@ -167,6 +170,8 @@ right button zooms and R reloads.
 - **Achievements** - 19 achievements (every mission, medals, 00 Agent, Bond Moves) with pop-ups and a list in the
   settings window, written in RetroAchievements' condition format; the set and its memory map are in
   [ACHIEVEMENTS.md](ACHIEVEMENTS.md).
+- **Hide HUD** - Clears the HUD on foot and in the driving missions, for screenshots (`hide_hud`, F1; at once). The
+  pause screens and menus stay.
 - **Skip Intro Movies** - `skip_intro = true` starts without the EA and MGM logo movies.
 - **Saves** - Kept on an emulated hard disk beside the exe.
 

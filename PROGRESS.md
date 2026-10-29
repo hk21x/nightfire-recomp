@@ -10,7 +10,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 8acd824 (2026-10-29: vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at 0b5ff49 (2026-10-29: launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -28,6 +28,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-29 - The launcher's update prompts (pc-features; sdk 0b5ff49)
+
+- Fork main 0b5ff49 (launcher-update, merged by another session after its gate; launcher only): a release launcher
+  knows its tag, offers a newer release (Update the launcher, What's new, Later), builds its own tag and offers a
+  rebuild that keeps saves. The check is GitHub's unauthenticated API: a private repository gets no prompt.
+  release.yml needs nothing (EoN's). My own gate run: PGR2 and EoN smoke OK; PGR1's collided with the PGR1
+  session's run in the same trees (frames stopped), not counted.
+- docs/releases/v1.0.0.md: an Updates section, today's features; README: modern buttons, Hide HUD, pause PC Settings.
+  Smoke OK.
 
 ### 2026-10-29 - Modern button pictures, Hide HUD, scope on ultrawide, the driving exe quarantined (pc-features; sdk ed5e147)
 
