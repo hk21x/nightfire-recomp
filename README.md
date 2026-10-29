@@ -84,9 +84,10 @@ if it crashes.
 
 ## Controls and Settings
 
-**PC Settings:** in the game's own menus, as the main menu's **PC Settings** item and a choice on the pause screen: field of view, mouse sensitivity
-and invert, skip intro, sharp 2D, aspect, display mode, resolution, vsync and frame cap. **F1** opens the full
-settings window (graphics, renderer, controls) at any time; changes are saved at once to `settings.toml`.
+**PC Settings:** in the game's own menus, as the main menu's **PC Settings** item and a choice on the on-foot pause
+screen (under Continue, Restart and Quit): field of view, mouse sensitivity and invert, skip intro, sharp 2D, aspect,
+display mode, resolution, vsync and frame cap. **F1** opens the full settings window (graphics, renderer, controls) at
+any time; changes are saved at once to `settings.toml`.
 
 **Keyboard and mouse on foot** (remappable in the settings window's Controls tab, two keys per input):
 
@@ -98,7 +99,7 @@ settings window (graphics, renderer, controls) at any time; changes are saved at
 | Action, reload | E, R |
 | Jump | Space |
 | Crouch | C or Left Ctrl |
-| Weapons | Mouse wheel, or the left and right arrows / 3 and 4 |
+| Weapons | Mouse wheel (in a scope it zooms), or the left and right arrows / 3 and 4 |
 | Next weapon | Q |
 | Alt. fire | Middle mouse button or F |
 | Next gadget | G |
@@ -106,10 +107,9 @@ settings window (graphics, renderer, controls) at any time; changes are saved at
 | Vision mode | V or Tab |
 | Pause | Esc or P |
 
-With a scope or a launcher the mouse turns at a quarter of its speed and the mouse wheel zooms, and a guided missile
-steers with the mouse.
-Keypads (door codes) take the left mouse button or Enter. In the menus the mouse wheel scrolls, Enter selects and
-Backspace goes back.
+With a scope or a launcher the mouse turns at a quarter of its speed; through a scope the mouse wheel zooms in and
+out. A guided missile steers with the mouse. Keypads (door codes) take the left mouse button or Enter. In the menus
+the mouse wheel scrolls, Enter selects and Backspace goes back.
 
 **Driving missions** have a layout of their own (rebound apart from the on-foot keys):
 
@@ -136,7 +136,8 @@ right button zooms and R reloads.
 - **Display Modes** - Fullscreen, borderless window or window, at any resolution the monitor offers.
 - **Widescreen** - The game's own 16:9 mode on a widescreen display.
 - **Ultrawide** - With `aspect = "screen"`, the 3D view widens to fill a 21:9 or wider screen, on foot and in the
-  driving missions; the HUD and menus keep their 16:9 shape in the centre.
+  driving missions; the HUD and menus keep their 16:9 shape in the centre, and the sniper scope's black surround
+  reaches the screen's sides.
 - **Field of View** - `fov_percent` (50 to 150, 100 the game's) widens or narrows the view on foot, driving and in
   the engine's cutscenes; the scope zooms in proportion.
 - **Frame Rate** - Vsync, a frame rate cap and an FPS counter.
@@ -167,7 +168,8 @@ right button zooms and R reloads.
 ### General
 - **Launcher** - `NightFireLauncher.exe`: choose your disc, Build, Play, Update; portable build tools, nothing
   installed.
-- **PC Settings in the game's menus** - A native page in the game's own menus (see above).
+- **PC Settings in the game's menus** - A native page in the game's own menus, from the main menu and the pause
+  screen (see above).
 - **Achievements** - 19 achievements (every mission, medals, 00 Agent, Bond Moves) with pop-ups and a list in the
   settings window, written in RetroAchievements' condition format; the set and its memory map are in
   [ACHIEVEMENTS.md](ACHIEVEMENTS.md).
@@ -183,9 +185,9 @@ right button zooms and R reloads.
 
 ## Status
 
-Plays on foot and in the driving missions on Windows, with saves; mouse aiming, the keyboard prompts, clean fonts,
-PC Settings, widescreen and ultrawide are in. Progress is in [PROGRESS.md](PROGRESS.md), and technical findings in
-[FINDINGS.md](FINDINGS.md).
+Plays on foot and in the driving missions on Windows, with saves; mouse aiming, the keyboard prompts, modern button
+pictures, clean fonts, PC Settings (main menu and pause screen), Hide HUD, Quit Game, widescreen and ultrawide are
+in. Progress is in [PROGRESS.md](PROGRESS.md), and technical findings in [FINDINGS.md](FINDINGS.md).
 
 ## Troubleshooting
 
@@ -195,6 +197,9 @@ PC Settings, widescreen and ultrawide are in. Progress is in [PROGRESS.md](PROGR
   on where it stopped.
 - A build failing with "permission denied" on `Nightfire.exe` or `NightfireDriving.exe`: the game is still running;
   close it and build again.
+- "The game could not start NightfireDriving.exe" when a driving mission starts: the driving exe is missing. Windows
+  Security may have quarantined it (Protection history: allow it on your device), or a build did not finish: build
+  again with the game closed.
 - A short stutter the first time a new area or effect appears: its shaders are being compiled. They are kept in
   `shadercache.bin`, so it does not happen there again.
 - A first boot again: delete the `hdd` folder beside `Nightfire.exe` (`NightFire\play\hdd` with the launcher,
