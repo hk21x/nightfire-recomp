@@ -62,6 +62,7 @@ constexpr uint32_t kMenuContext = 0x25F1D0, kContextSize = 0x1D8;
 constexpr uint32_t kList = 0x10000100;  // Edit Codename's list widget
 constexpr uint32_t kTable = 0x17CEC8, kEntry = 24, kEntries = 7;
 constexpr uint32_t kLabelHandle = 0x0000FC01, kHelpHandle = 0x0100FC02;  // no text bank goes that far
+constexpr uint32_t kPauseLabel = 0x0200FC03;  // the pause screen's choice (src/game/pc_settings_item.cpp)
 constexpr uint32_t kAvPicture = 0x3000125;
 
 // in memory past the title's, which the recompiled code reads as it is (AllocSystem's it may not: see ListCopy)
@@ -454,8 +455,8 @@ X86_FUNC(sub_0008C7F0) {
 X86_EXTERN_FUNC(__imp__sub_0006D460);
 X86_FUNC(sub_0006D460) {
     uint32_t h = R32(ctx.esp + 4);
-    if (h == kLabelHandle || h == kHelpHandle) {
-        ctx.eax = Str(h == kLabelHandle ? "PC Settings" : "Picture, controls and more for this PC.");
+    if (h == kLabelHandle || h == kHelpHandle || h == kPauseLabel) {
+        ctx.eax = Str(h == kLabelHandle ? "PC Settings" : h == kPauseLabel ? "PC SETTINGS" : "Picture, controls and more for this PC.");
         ctx.esp += 4;
         return;
     }

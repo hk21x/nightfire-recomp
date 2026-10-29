@@ -7,6 +7,10 @@
 // given a copy of the stream with the Codenames item's records cloned as the new item (its own id, a label string
 // of ours) and the items moved up to make room. A press of A reaches the per-id dispatcher 0x8E320, where the new
 // id opens the overlay; the help box under the menu gets its line from 0x959E0, which knows only the game's items.
+// A level's menu file (the pause screen, page 0x4000004B's) has no AV Options page: its choices list (item 0x10000028
+// index 6: CONTINUE, RESTART, QUIT as text records, attribute 0x11) gets a fourth, PC SETTINGS, and the page is made
+// there from the front end's AV Options records, kept from its file. A on that choice opens it, as the main menu's
+// item does; back returns to the pause screen.
 // (.local/menu_re.md has the record formats and how they were found.)
 #include <cstring>
 #include <mutex>
@@ -39,6 +43,11 @@ constexpr uint32_t kOpPage = 0xFFFFFFF0, kOpWidget = 0xFFFFFFF9, kOpAttr = 0xFFF
 constexpr uint8_t kMsgText = 0x18;
 constexpr uint32_t kActivate = 0x4B;       // a widget message: A on it
 constexpr int16_t kRowY[4] = {230, 262, 294, 326};  // the three items moved up a row, ours below them
+constexpr uint32_t kPausePage = 0x4000004B, kPauseItem = 0x10000028, kPauseChoices = 6;  // the choices list's index
+constexpr uint8_t kMsgAddText = 0x11;      // a list's entry: a text handle
+constexpr uint32_t kMsgRead = 0x34;        // the list's choice
+constexpr uint32_t kPauseLabel = 0x0200FC03;  // GetText answers it (src/game/pc_settings_page.cpp)
+std::vector<uint8_t> g_av;                 // the front end's AV Options page records, for a level's file
 
 // bytes of each record by its opcode (the dword before the fields included); 0 ends the stream
 uint32_t RecordSize(uint32_t op) {
@@ -66,6 +75,53 @@ uint32_t Get32(const std::vector<uint8_t>& b, size_t at) {
 }
 void Put32(std::vector<uint8_t>& b, size_t at, uint32_t v) { std::memcpy(&b[at], &v, 4); }
 void Put16(std::vector<uint8_t>& b, size_t at, int16_t v) { std::memcpy(&b[at], &v, 2); }
+
+// the records of the pause screen's panel (its first widget after the page's, 0x10000001 at 45,107), empty if none
+std::vector<uint8_t> PausePanel(const std::vector<uint8_t>& b) {
+    size_t start = 0;
+    for (size_t p = 4; p + 4 <= b.size();) {
+        uint32_t op = Get32(b, p), n = RecordSize(op);
+        if (!n) break;
+        if (op == kOpPage && start) break;
+        if (op == kOpPage && Get32(b, p + 4) == kPausePage) start = 1;
+        if (op == kOpWidget && start == 1 && Get32(b, p + 4) == 0x10000001) start = p;
+        else if (op == kOpWidget && start > 1) return {b.begin() + start, b.begin() + p};
+        p += n;
+    }
+    return {};
+}
+
+// a level's file: PC SETTINGS after the pause choices' texts; false when the file has no pause page
+bool AddToPause(std::vector<uint8_t>& b) {
+    size_t page = 0, after = 0;
+    bool in_list = false;
+    for (size_t p = 4; p + 4 <= b.size();) {
+        uint32_t op = Get32(b, p), n = RecordSize(op);
+        if (!n) break;
+        if (op == kOpPage) {
+            if (page) break;
+            if (Get32(b, p + 4) == kPausePage) page = p;
+        } else if (op == kOpWidget && page) {
+            in_list = Get32(b, p + 4) == kPauseItem && b[p + 8] == 6 && Get32(b, p + 0x14) == kPauseChoices;
+            if (in_list) {  // room for four rows (three in 120): from 176 to 336, above the hint line at 341
+                Put16(b, p + 0xC, 176);
+                Put16(b, p + 0x10, 160);
+            }
+        } else if (op == kOpAttr && in_list && b[p + 4] == kMsgAddText) {
+            after = p + n;
+        }
+        p += n;
+    }
+    if (!page || !after) return false;
+    std::vector<uint8_t> entry(13);
+    Put32(entry, 0, kOpAttr);
+    entry[4] = kMsgAddText;
+    Put32(entry, 5, kPauseLabel);
+    Put32(entry, 9, 0);
+    b.insert(b.begin() + after, entry.begin(), entry.end());
+    Put32(b, page + 0x11, Get32(b, page + 0x11) + uint32_t(entry.size()));
+    return true;
+}
 
 uint32_t GuestString(const char* s) {
     uint32_t n = uint32_t(std::strlen(s)) + 1, va = mem::AllocHostContiguous(n, 16);  // readable by the game's code
@@ -109,7 +165,31 @@ uint32_t Patched(uint32_t stream) {
         }
         p += n;
     }
-    if (!page || !item[0] || !item[1] || !item[2] || !codenames_end) return 0;
+    if (!page || !item[0] || !item[1] || !item[2] || !codenames_end) {
+        // a level's file: the pause screen's entry, and the page before the file's end
+        if (g_av.empty() || !AddToPause(b)) return 0;
+        std::vector<uint8_t> page_copy = nf::PcPage(g_av, RecordSize);
+        if (page_copy.empty()) return 0;
+        // behind its rows the pause screen's panel, made the page's size (the front end's backdrop is not loaded)
+        std::vector<uint8_t> panel = PausePanel(b);
+        size_t second = 0;  // the page's second widget record: the panel goes before it
+        for (size_t p = RecordSize(kOpPage), widgets = 0; p + 4 <= page_copy.size() && !second;) {
+            uint32_t op = Get32(page_copy, p), n = RecordSize(op);
+            if (!n) break;
+            if (op == kOpWidget && ++widgets == 2) second = p;
+            p += n;
+        }
+        if (!panel.empty() && second) {
+            Put16(panel, 0xA, 16), Put16(panel, 0xC, 24), Put16(panel, 0xE, 608), Put16(panel, 0x10, 432);
+            page_copy.insert(page_copy.begin() + second, panel.begin(), panel.end());
+            Put32(page_copy, 0x11, Get32(page_copy, 0x11) + uint32_t(panel.size()));
+        }
+        b.insert(b.end() - 4, page_copy.begin(), page_copy.end());  // before the end record
+        made = mem::AllocHostContiguous(uint32_t(b.size()), 16);
+        std::memcpy(kernel::HostPtr(made), b.data(), b.size());
+        LOGR("nightfire: PC Settings added to the pause screen (menu file %08X, %u bytes)", stream, at);
+        return made;
+    }
     // our item: the Codenames item's records with our id, row and label
     std::vector<uint8_t> ours(b.begin() + item[2], b.begin() + codenames_end);
     Put32(ours, 4, kPcItem);
@@ -133,6 +213,7 @@ uint32_t Patched(uint32_t stream) {
         if (!n) break;
         if (op == kOpPage && Get32(b, p + 4) == kAvPage && Get32(b, p + 8) == kFrontVar && b[p + 0x10] == 0) {
             std::vector<uint8_t> av(b.begin() + p, b.begin() + p + n + Get32(b, p + 0x11));
+            g_av = av;
             std::vector<uint8_t> page_copy = nf::PcPage(av, RecordSize);
             if (page_copy.empty()) break;  // not laid out as expected: no page
             p += av.size();
@@ -163,6 +244,18 @@ X86_EXTERN_FUNC(__imp__sub_0008E320);
 X86_FUNC(sub_0008E320) {
     uint32_t widget = R32(ctx.esp + 8), message = R32(ctx.esp + 0xC);
     if (widget && nf::PcPageMessage(ctx, R32(ctx.esp + 4) & 0xFF, widget, message, R32(ctx.esp + 0x14))) {
+        ctx.eax = 1;
+        ctx.esp += 4;
+        return;
+    }
+    // A on the pause screen's choices with PC SETTINGS chosen (its fourth, 3)
+    for (uint32_t w : {widget, R32(ctx.esp + 0x10)}) {
+        if (!w || message != kActivate || R32(w + 0x18) != kPauseItem || R32(w + 0x20) != kPauseChoices) continue;
+        uint32_t eax = ctx.eax, chosen = kernel::CallGuest(ctx, kSetWidget, {w, kMsgRead, 0, 0});
+        ctx.eax = eax;
+        if (chosen != 3) break;
+        nf::OpenPcPage(ctx, R32(ctx.esp + 4) & 0xFF);
+        LOGR("nightfire: PC Settings opened from the pause screen");
         ctx.eax = 1;
         ctx.esp += 4;
         return;

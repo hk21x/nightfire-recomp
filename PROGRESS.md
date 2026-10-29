@@ -46,8 +46,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   such a bar on the frame's edge, as an untextured fill. Windows renderers only: Harry to check.
 - Gate passed (EoN, PGR2, PGR1 smoke, PGR1's frame check); fork main fast-forwarded to ed5e147.
 - Harry on Windows: modern button pictures, Hide HUD and the scope on ultrawide all work.
-- Pause menu PC Settings: in progress (the level's menu file dumped in .local/pause_dump, frame 13140, stream
-  834CC5D0).
+- PC Settings from the pause screen (on foot): a level's menu file (stream 834CC5D0 in the bot match; pages 4B, 42,
+  4C, 07, 0C, 44, 46, 2F, 21) has no AV Options page, so the front end's AV records are kept when its file is built
+  and the page is made from them into the level's file, with the pause panel (0x10000001) behind it at 16,24
+  608x432. The choices list (0x10000028 index 6, type 6: ATTR 0x11 texts 0x16A-0x16C) gets PC SETTINGS (a handle
+  GetText answers) and room for four (y 176, h 160); A on it with 3 chosen (0x34) opens the page, B comes back.
+  Headless: bot match, START, PC SETTINGS, the page, B, the pause screen again. Driving.xbe's pause (EA's menus)
+  has none yet.
 
 ### 2026-10-29 - Harry's Windows checks
 
