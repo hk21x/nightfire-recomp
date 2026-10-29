@@ -6,9 +6,9 @@
 // which keeps corners and straight strokes and turns 45 degree stairs into diagonals; a Gaussian half a source texel
 // wide over that irons out the stairs of shallower slopes (Scale2x alone left bumps on them: Harry's screenshot)
 // without closing a glyph's one-texel gaps; the field is taken twice larger again and cut at its middle a pixel
-// wide, which gives the edge its antialiasing. The colour is the nearest opaque texel's. The title's picture wins over the
-// runtime's sharpened one; the guest bytes stay as they are (a font changed in memory drops it, and it is made again
-// at the next bind).
+// wide, which gives the edge its antialiasing. default.xbe's is drawn from a real font instead where its slots are
+// known (DrawFont). The colour is the nearest opaque texel's. The title's picture wins over the runtime's sharpened
+// one; the guest bytes stay as they are (a font changed in memory drops it, and it is made again at the next bind).
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -25,7 +25,13 @@
 #include "kernel/kernel.h"
 #include "kernel/memory.h"
 
+#define STB_TRUETYPE_IMPLEMENTATION
+#define STBTT_STATIC
+#include "../../third_party/stb/stb_truetype.h"
+
 namespace nf {
+extern const unsigned char kFontTtf[];  // src/common/font_data.cpp
+extern const size_t kFontTtfSize;
 namespace {
 
 constexpr int kScale = 8;      // Scale2x twice, then the field twice
@@ -103,12 +109,18 @@ std::vector<uint8_t> Cut(const std::vector<float>& f, int w, int h, int s) {
     return out;
 }
 
+bool DrawFont(const std::vector<uint8_t>& mask, int w, int h, std::vector<uint8_t>& alpha);
+
 // the font's picture kScale times larger (B8G8R8A8 rows)
 std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
     std::vector<uint8_t> mask(size_t(w) * h);
     for (size_t i = 0; i < mask.size(); i++) mask[i] = (bgra[i] >> 24) >= 128;
     std::vector<uint8_t> m4 = Scale2x(Scale2x(mask, w, h), w * 2, h * 2);
     std::vector<uint8_t> alpha = Cut(Blur(m4, w * 4, h * 4), w * 4, h * 4, kScale / 4);
+    if (w == 512 && h == 64 && DrawFont(mask, w, h, alpha)) {
+        static bool said = false;
+        if (!said) said = true, LOGR("nightfire: default.xbe's font drawn from Sour Gummy Black");
+    }
     // each texel's colour: its own where it shows, else an opaque neighbour's (the glyph's), else white
     std::vector<uint32_t> colour(size_t(w) * h, 0xFFFFFF);
     for (int y = 0; y < h; y++)
@@ -130,6 +142,133 @@ std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h) {
             out[size_t(y) * ow + x] =
                 colour[size_t(y / kScale) * w + x / kScale] | uint32_t(alpha[size_t(y) * ow + x]) << 24;
     return out;
+}
+
+// default.xbe's 512x64 font as a real font (Sour Gummy Black, Harry's pick: third_party/fonts): its glyphs lie in three
+// rows, each a run of columns with a clear one between; the first row is ASCII from '!' to ']', the second '`', a to z
+// and Latin-1 letters, the third more of them (the slots holding ligatures, quotes and a box keep the rebuilt mask).
+// Each known slot is cleared and the character drawn in it from the font: one size for all (the game's H's height),
+// on each row's baseline (the bottom of its H, x and a-grave), centred in the slot, narrowed to fit it and made
+// smaller where it would leave its row's band (the game samples no further); one that would be much smaller (the
+// accented capitals, c-cedilla) keeps the game's glyph, rebuilt.
+constexpr int kRowGlyphs[3] = {63, 62, 25};
+constexpr uint16_t kRow1[62] = {0,      '`',    'a',    'b',    'c',    'd',    'e',    'f',    'g',    'h',
+                                'i',    'j',    'k',    'l',    'm',    'n',    'o',    'p',    'q',    'r',
+                                's',    't',    'u',    'v',    'w',    'x',    'y',    'z',    '{',    0,
+                                '}',    0,      0x20AC, 0,      0,      0,      0,      0,      0,      0x2013,
+                                0x2014, 0x2122, 0xA1,   0x152,  0xA9,   0xAE,   0xBF,   0xC0,   0xC1,   0xC2,
+                                0xC4,   0xC5,   0xC8,   0xC9,   0xCA,   0xCD,   0xCE,   0xD1,   0xD3,   0xD6,
+                                0xD9,   0xDA};
+constexpr uint16_t kRow2[25] = {0xDC, 0xDF, 0xE0, 0xE1, 0xE2, 0xE4, 0xE5, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC,
+                                0xED, 0xEE, 0xEF, 0xF1, 0xF2, 0xF3, 0xF4, 0xF6, 0xF9, 0xFA, 0xFB, 0xFC};
+
+struct Slot {
+    int x0, x1;  // inclusive, texels
+    int top, bottom;  // the glyph's own rows
+};
+struct Row {
+    int y0, y1;  // the band, inclusive
+    std::vector<Slot> slots;
+};
+
+// the rows and their slots, from the mask; empty when the font is not laid out as default.xbe's
+std::vector<Row> Layout(const std::vector<uint8_t>& mask, int w, int h) {
+    std::vector<Row> rows;
+    for (int y = 0; y < h;) {
+        auto lit = [&](int yy) {
+            for (int x = 0; x < w; x++)
+                if (mask[size_t(yy) * w + x]) return true;
+            return false;
+        };
+        if (!lit(y)) {
+            y++;
+            continue;
+        }
+        Row r{y, y, {}};
+        while (r.y1 + 1 < h && lit(r.y1 + 1)) r.y1++;
+        y = r.y1 + 1;
+        for (int x = 0; x < w;) {
+            auto col = [&](int xx) {
+                for (int yy = r.y0; yy <= r.y1; yy++)
+                    if (mask[size_t(yy) * w + xx]) return true;
+                return false;
+            };
+            if (!col(x)) {
+                x++;
+                continue;
+            }
+            Slot s{x, x, r.y1, r.y0};
+            while (s.x1 + 1 < w && col(s.x1 + 1)) s.x1++;
+            for (int yy = r.y0; yy <= r.y1; yy++)
+                for (int xx = s.x0; xx <= s.x1; xx++)
+                    if (mask[size_t(yy) * w + xx]) s.top = std::min(s.top, yy), s.bottom = std::max(s.bottom, yy);
+            r.slots.push_back(s);
+            x = s.x1 + 1;
+        }
+        rows.push_back(std::move(r));
+    }
+    if (rows.size() != 3) return {};
+    for (int i = 0; i < 3; i++)
+        if (int(rows[size_t(i)].slots.size()) != kRowGlyphs[i]) return {};
+    return rows;
+}
+
+uint32_t Codepoint(int row, int i) {
+    if (row == 0) return i <= ']' - '!' ? uint32_t('!' + i) : 0;
+    return row == 1 ? kRow1[i] : kRow2[i];
+}
+
+// the slots known drawn from the font into `alpha` (w * kScale wide): true when the font could be read
+bool DrawFont(const std::vector<uint8_t>& mask, int w, int h, std::vector<uint8_t>& alpha) {
+    std::vector<Row> rows = Layout(mask, w, h);
+    if (rows.empty()) return false;
+    stbtt_fontinfo font;
+    if (!stbtt_InitFont(&font, kFontTtf, stbtt_GetFontOffsetForIndex(kFontTtf, 0))) return false;
+    // one size: the game's H as tall as the font's
+    const Slot& gh = rows[0].slots[size_t('H' - '!')];
+    int hx0, hy0, hx1, hy1;
+    if (!stbtt_GetCodepointBox(&font, 'H', &hx0, &hy0, &hx1, &hy1) || hy1 <= 0) return false;
+    float scale = float(gh.bottom - gh.top + 1) * kScale / float(hy1);
+    const int baseline_slot[3] = {'H' - '!', 25 /* x */, 2 /* a-grave */};
+    const int ow = w * kScale;
+    for (int r = 0; r < 3; r++) {
+        const Row& row = rows[size_t(r)];
+        float base = float(row.slots[size_t(baseline_slot[r])].bottom + 1) * kScale;  // the baseline, in output pixels
+        for (int i = 0; i < int(row.slots.size()); i++) {
+            uint32_t cp = Codepoint(r, i);
+            if (!cp || !stbtt_FindGlyphIndex(&font, int(cp))) continue;
+            const Slot& s = row.slots[size_t(i)];
+            int bx0, by0, bx1, by1;
+            float sy = scale, slot_w = float(s.x1 - s.x0 + 1) * kScale;
+            // smaller where it would leave its band (the font's ascenders and accents are taller than the game's)
+            stbtt_GetCodepointBitmapBox(&font, int(cp), scale, scale, &bx0, &by0, &bx1, &by1);
+            float above = base - float(row.y0 * kScale), below = float((row.y1 + 1) * kScale) - base;
+            if (by0 < 0 && -by0 > above) sy = std::min(sy, scale * above / float(-by0));
+            if (by1 > 0 && by1 > below) sy = std::min(sy, scale * below / float(by1));
+            if (sy < scale * 0.75f) continue;  // much smaller than its neighbours (an accented capital): the game's
+            stbtt_GetCodepointBitmapBox(&font, int(cp), sy, sy, &bx0, &by0, &bx1, &by1);
+            float sx = sy;
+            if (bx1 - bx0 > slot_w) sx = sy * slot_w / float(bx1 - bx0);  // narrowed to fit its slot
+            stbtt_GetCodepointBitmapBox(&font, int(cp), sx, sy, &bx0, &by0, &bx1, &by1);
+            int gw = bx1 - bx0, gh2 = by1 - by0;
+            if (gw <= 0 || gh2 <= 0) continue;
+            std::vector<uint8_t> g(size_t(gw) * gh2);
+            stbtt_MakeCodepointBitmap(&font, g.data(), gw, gh2, gw, sx, sy, int(cp));
+            // the slot cleared (its band), the glyph placed centred on it and on the row's baseline
+            int cx0 = s.x0 * kScale, cx1 = (s.x1 + 1) * kScale, cy0 = row.y0 * kScale, cy1 = (row.y1 + 1) * kScale;
+            for (int y = cy0; y < cy1; y++)
+                for (int x = cx0; x < cx1; x++) alpha[size_t(y) * ow + x] = 0;
+            int left = cx0 + int(std::lround((slot_w - float(gw)) / 2)), top = int(std::lround(base)) + by0;
+            for (int y = 0; y < gh2; y++)
+                for (int x = 0; x < gw; x++) {
+                    int ox = left + x, oy = top + y;
+                    if (ox < cx0 || ox >= cx1 || oy < cy0 || oy >= cy1) continue;
+                    uint8_t& o = alpha[size_t(oy) * ow + ox];
+                    o = std::max(o, g[size_t(y) * gw + x]);
+                }
+        }
+    }
+    return true;
 }
 
 std::mutex g_lock;

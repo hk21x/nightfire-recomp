@@ -28,6 +28,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - default.xbe's font from a real font: Sour Gummy Black (pc-features)
+
+- Harry asked for a real font in place of the upscale and picked Google's Sour Gummy Black (SIL OFL 1.1; the static
+  Black from upstream eifetx/Sour-Gummy-Fonts, third_party/fonts with OFL.txt; src/common/font_data.cpp its bytes,
+  since the headless harness builds src/ alone). stb_truetype (public domain, third_party/stb) draws it.
+- default.xbe's 512x64 font: three rows of slots (columns with a clear one between: 63, 62, 25), row 0 ASCII '!' to
+  ']' (the menu's "S" at u 399/512 matches), row 1 '`', a-z and Latin-1, row 2 more Latin-1 (ligatures, quotes and a
+  box keep the rebuilt mask; no glyph table was found in memory: none of widths, x as bytes, shorts or floats).
+  DrawFont: one size (the game's H), each row's baseline (its H, x, a-grave), centred in the slot, narrowed to fit,
+  smaller where it would leave its band (ascenders), the game's glyph where that is under 3/4 (accented capitals).
+  NF_FONT_DUMP shows the sheet; a line laid out from it on the game's baselines reads cleanly. Driving.xbe's font
+  keeps the smooth rebuild (its own layout). Smoke OK.
+
 ### 2026-10-29 - Fonts: stairs on shallow curves ironed out (pc-features)
 
 - Harry (Windows screenshot, the objective text): still a bit stepped. Scale2x fixes 45 degree stairs only; shallower
