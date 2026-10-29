@@ -28,6 +28,26 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - PC Settings as a page of the game's own menus (pc-features)
+
+- Harry: the PC settings in the game's menus, as an option of Edit Codename (Codenames, a profile, its list).
+- src/game/pc_settings_page.cpp: the AV Options page (0x40000031) cloned into the menu file copy the builder reads
+  (pc_settings_item.cpp), its page and row widgets given our ids (0x4000FC10, 0x1000FC11..), its labels ours: Field of
+  View and Mouse Sensitivity (the volume sliders, 21 steps), Invert Mouse, Skip Intro Movies, Sharp Text, Aspect Ratio
+  (the choices), More Settings (Restore Defaults' button: the settings window); the rest hidden as AV hides its own.
+  Driven through the dispatcher 0x8E320 as AV's handler 0x8D7A0 drives its own (0x4C entered: sliders 0x27/0x69/0x2E,
+  choices 0x17, 0x10 text and value, 0x1E by value; 0x4B: read 0x40/0x35, kept to the settings file, back 0x5F;
+  0x4E: the row's help line).
+- Edit Codename's list (table 0x17CEC8, 7 entries) gets an eighth: its range widened as it is made (0x8C7F0, 0x51:
+  0x27 0..7), the rows drawn from a copy of the table (0x7F680 called from 0x8C7F0's hook: its own direct call bypasses
+  a hook of 0x7F680) with ours at 7 (label and help through a GetText hook, AV's picture), A on it opens the page. The
+  copy lives in AllocHostContiguous memory: AllocSystem's pages are not readable by recompiled code (a fault at
+  0xB00F30C8); before the list is made its index is a pointer the game wraps, so the copy is used for real indices
+  only. kernel::CallGuest returns the guest's eax (the context is restored): reading ctx.eax after gave stale values.
+- The main menu's PC Settings item opens the page too. Headless (Harry's save): Codenames -> Default -> the list's
+  eighth entry "PC Settings" with its help -> the page; field of view +3 steps and Invert Mouse on kept ("PC Settings
+  kept: field of view 115%, ... invert 1"). Smoke OK.
+
 ### 2026-10-29 - Achievements (pc-features)
 
 - The progress map (agent, .local/progress_re.md; checked against Harry's decoded save and a faked Enemies Vanquished
