@@ -49,7 +49,7 @@ constexpr Colour kDark{30, 30, 30, 255}, kWhite{255, 255, 255, 255};
 
 // what the pictures show: the disc's, or the keys and mouse buttons bound to each control (in a menu, on a gun)
 struct Look {
-    bool keys = false, menu = false;
+    bool keys = false, menu = false, held = false;  // held: Bond not the player's to move (PlayerFree)
     int gun = -1;
     std::array<std::array<uint16_t, 2>, input::kControls> bound{};
     bool operator==(const Look&) const = default;
@@ -60,12 +60,14 @@ Look Current() {
     l.keys = input::UsingKeyboard();
     if (!l.keys) return l;
     l.menu = MenuKeys();
+    l.held = !kDriving && !PlayerFree();
     l.gun = kDriving ? GunStyle() : -1;
     for (int c = 0; c < input::kControls; c++) l.bound[size_t(c)] = input::ControlKeys(c);
     if (l.menu) {  // A selects and B goes back with these in the menus (src/common/menu_mouse.cpp)
         l.bound[input::kA] = {0x0D, 0};
         l.bound[input::kB] = {0x08, 0};
     }
+    if (!kDriving && !l.menu && !PlayerFree()) l.bound[input::kA] = {0x01, 0x0D};  // a keypad's A: the left button
     if (l.gun >= 0) {  // a mounted gun: the mouse's buttons fire and zoom, R reloads (src/common/menu_mouse.cpp)
         l.bound[input::kRT] = {0x01, 0};
         l.bound[input::kLT] = {0x02, 0};

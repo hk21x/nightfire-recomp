@@ -19,6 +19,7 @@ bool MenuUp();
 std::vector<achievements::Def> AchievementSet();  // src/common/achievement_set.cpp
 void MenuMouse(int port, input::Pad& p);
 void MouseAsStick();
+bool PlayerFree();  // default.xbe: Bond under the player's own control (not a keypad, a missile, a cutscene)
 int GunStyle();
 bool ButtonPictures(uint32_t header, uint32_t palette);  // GameInfo::texture_bound (src/common/buttons.cpp)
 void RefreshButtons();  // each poll

@@ -118,6 +118,10 @@ X86_FUNC(sub_000A9CF0) {
 }
 
 namespace nf {
+// Bond under the player's own control on foot (0xA9CF0 turned player 1 within two frames): not at a keypad, steering
+// a missile or a turret, in a cutscene
+bool PlayerFree() { return g_direct <= 2; }
+
 // after 0xDE720 filled the controls: where the mouse does not turn the player itself, it plays the right stick
 // (style 0's: slot 0 and 3 its x, 4 and 5 its y, -1 to 1)
 void MouseAsStick() {

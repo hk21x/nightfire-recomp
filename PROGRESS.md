@@ -28,6 +28,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-29 - Keypads on the keyboard: the left button and Enter confirm (pc-features)
+
+- Harry: a door's keypad took its digits with Ctrl. Its confirm is the pad's A, which the keyboard has as crouch
+  (C, Ctrl, the NightFire style's A). Where Bond is not the player's to move on foot (nf::PlayerFree: 0xA9CF0 has not
+  turned player 1 for two frames, as for the guided missile; no menu up), the left mouse button and Enter press A too
+  (src/common/menu_mouse.cpp) and A's picture is the left button (src/common/buttons.cpp). Not tried at a keypad
+  headless (none reached); the bot match's play and smoke OK.
+
 ### 2026-10-29 - PC Settings: the resolution's text (pc-features)
 
 - Harry's screenshot: Resolution showed "WUff". The guest copies of the page's strings were found again by their host

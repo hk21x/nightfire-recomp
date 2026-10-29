@@ -67,6 +67,10 @@ void MenuMouse(int port, input::Pad& p) {
     else if (gun == 4) next = input::kBlack, prev = input::kWhite;
     else if (gun == 6 || gun == 7) next = input::kDown, prev = input::kUp;
     else if (kDriving && gun < 0) next = input::kBlack, prev = input::kWhite;
+    // on foot where Bond is not the player's to move (a door's keypad, a missile, a cutscene) A is the console's
+    // confirm, which the keyboard has as crouch (C, Ctrl): the left button and Enter press it too
+    if (!kDriving && !menu && !PlayerFree() && input::UsingKeyboard() && ((held & 1) || KeyHeld(0x0D)))
+        Press(p, input::kA);
     // on a mounted gun the car's buttons do not apply: the left button fires (RT), the right zooms (LT), R reloads (X
     // in style 0, else A)
     if (gun >= 0 && input::UsingKeyboard()) {
