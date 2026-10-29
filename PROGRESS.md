@@ -10,7 +10,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at ca1d0f9 (2026-10-28: point sprites through stage 3); before that 41ac590 (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at ed1796c (2026-10-29: replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; to be tried on Windows
@@ -27,6 +27,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-29 - Driving font on Windows: replacements for linear textures (pc-features; sdk ed1796c)
+
+- Harry's car screenshot: the objective, timer and ammo still in EA's font, though they draw from the replaced
+  82E2E580. D3D12's and D3D11's BindGuestTexture took a title's replacement only for a non-linear texture; LIN_A8's
+  coordinates are normalised by the guest's size (texsize), so a larger picture reads the same, and A8 decodes to
+  white with alpha as the picture is. SDK ed1796c drops the condition. Gate passed (EoN, PGR2, PGR1 smoke, PGR1's
+  frame check; none of them sets a replacement on a linear texture); fork main fast-forwarded to it.
+- fonts.cpp: Driving.xbe treats any A8 / LIN_A8 texture with EA's glyph table behind it as a font (the table's size
+  from the texture's), remembering those that are not. Smoke OK.
 
 ### 2026-10-29 - Driving.xbe's font from Sour Gummy Black too (pc-features)
 

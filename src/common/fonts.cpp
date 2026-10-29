@@ -122,10 +122,8 @@ std::vector<uint32_t> Rebuild(const std::vector<uint32_t>& bgra, int w, int h, u
         static bool said = false;
         if (!said) said = true, LOGR("nightfire: default.xbe's font drawn from Sour Gummy Black");
     }
-    if (w == 256 && h == 108 && DrawEaFont(data, w, h, alpha)) {
-        static bool said = false;
-        if (!said) said = true, LOGR("nightfire: Driving.xbe's font drawn from Sour Gummy Black");
-    }
+    if (kDriving && DrawEaFont(data, w, h, alpha))
+        LOGR("nightfire: Driving.xbe's font %08X (%dx%d) drawn from Sour Gummy Black", data, w, h);
     // each texel's colour: its own where it shows, else an opaque neighbour's (the glyph's), else white
     std::vector<uint32_t> colour(size_t(w) * h, 0xFFFFFF);
     for (int y = 0; y < h; y++)
@@ -287,7 +285,7 @@ struct EaGlyph {
     int w, h, x, y, yoff;
 };
 
-std::vector<EaGlyph> EaTable(uint32_t data) {
+std::vector<EaGlyph> EaTable(uint32_t data, int tw, int th) {
     std::vector<EaGlyph> out;
     for (uint32_t back = 16; back < 0x8000; back += 4) {
         uint32_t p = data - back;
@@ -300,7 +298,7 @@ std::vector<EaGlyph> EaTable(uint32_t data) {
             uint32_t code = kernel::G<uint16_t>(r);
             int w = kernel::G<uint8_t>(r + 2), h = kernel::G<uint8_t>(r + 3);
             int x = kernel::G<uint16_t>(r + 4), y = kernel::G<uint16_t>(r + 6), yoff = kernel::G<int8_t>(r + 10);
-            if (code >= last || code < 0x20 || x + w > 256 || y + h > 108) break;
+            if (code >= last || code < 0x20 || x + w > tw || y + h > th) break;
             out.push_back({code, w, h, x, y, yoff});
             last = code;
             if (code == 0x20) return out;
@@ -311,7 +309,7 @@ std::vector<EaGlyph> EaTable(uint32_t data) {
 }
 
 bool DrawEaFont(uint32_t data, int w, int h, std::vector<uint8_t>& alpha) {
-    std::vector<EaGlyph> table = EaTable(data);
+    std::vector<EaGlyph> table = EaTable(data, w, h);
     const EaGlyph* big_h = nullptr;
     for (const EaGlyph& g : table)
         if (g.code == 'H') big_h = &g;
@@ -375,7 +373,9 @@ void FontPicture(uint32_t header) {
     if (!gpu::Describe(header, d)) return;
     bool font = false;
     for (const Font& f : kFonts) font |= d.format == f.format && d.width == f.w && d.height == f.h;
-    if (!font) return;
+    // Driving.xbe: any alpha texture (A8, LIN_A8) with EA's glyph table behind it (the HUD's objectives, timer, ammo)
+    bool ea = kDriving && (d.format == 0x19 || d.format == 0x1F) && d.width <= 512 && d.height <= 512;
+    if (!font && !ea) return;
     if (auto r = gpu::FindReplacement(d.data); r && !r->sharpened) return;  // made already, still holds
     std::lock_guard<std::mutex> hold(g_lock);
     uint32_t bytes = gpu::LevelSize(d, 0);
@@ -383,8 +383,9 @@ void FontPicture(uint32_t header) {
     const auto* guest = static_cast<const uint8_t*>(kernel::HostPtr(d.data));
     uint64_t hash = Fnv(guest, bytes);
     auto it = g_made.find(d.data);
-    if (it != g_made.end() && it->second == hash) return;  // made from these bytes already
+    if (it != g_made.end() && it->second == hash) return;  // made from these bytes already (or no font)
     g_made[d.data] = hash;
+    if (!font && EaTable(d.data, int(d.width), int(d.height)).empty()) return;  // an alpha texture, not a font
     std::vector<uint32_t> px;
     if (!gpu::DecodeBgra(d, 0, guest, px)) return;
     std::vector<uint32_t> big = Rebuild(px, int(d.width), int(d.height), d.data);
