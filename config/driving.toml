@@ -23,6 +23,11 @@ D3DDevice_Reset         = 0x166230  # PGR2's 0x1C38D0 at 0.96 (instructions, num
 D3DDevice_SetPalette    = 0x1669E0  # (stage, palette) ret 8: stores it in the device's palette slot [+0xB48 + stage * 4]
                                     # with an internal reference and pushes 0x41B20 + stage * 0x40 (0x166A56) itself, as
                                     # EoN's QFE 4 one; unnamed, the host never saw a palette: the P8 menu panels were noise
+D3D_BlockOnNonSurfaceResource = 0x16CE90  # (resource) ret 4: a resource's lock waits on [+8] (or, internally
+                                    # referenced, the device's [+0x30]) through 0x16CAE0, beside BlockOnResource 0x16CE10;
+                                    # the vertex buffer lock 0x16B4C0 calls it (0x16B4F9) without NOOVERWRITE. Unnamed, it
+                                    # never waited for the render thread: the loading screen's ring of three buffers a tile
+                                    # (0xF6E90) was rewritten before its draws ran (default.xbe does not link it)
 IDirectSound_SetI3DL2Listener = 0x17BE1B  # this - 8, 2 arguments (ret 0xC) -> 0x17BAF4: copies a DSI3DL2LISTENER (Room,
                                     # RoomHF, RolloffFactor, DecayTime ... from 0x17BB3C) into the effect settings,
                                     # DSERR 0x88780032 without an effects image (0x17BB31); the game 0x140A80 calls it

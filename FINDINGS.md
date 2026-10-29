@@ -32,6 +32,12 @@ game's own code and data, with its addresses).
 - **[console]** The device holds the current gamma ramp (CDevice_GammaRamps, two slots) and a console starts with a
   linear one: titles read it back with GetGammaRamp (Driving.xbe 0x165E70) as the base of their fades.
 - **[game]** Driving.xbe's fades scale the ramp saved at 0x23FC08 (0xE7740, per channel base * scale + 0.5).
+- **[console]** A vertex or index buffer's lock (Driving.xbe 0x16B4C0, flags without NOOVERWRITE) blocks in
+  D3D_BlockOnNonSurfaceResource (0x16CE90), not BlockOnResource; default.xbe does not link it. Unnamed it waited on
+  guest push buffer state only, and the render thread read buffers the title had refilled.
+- **[game]** EAGL's vertex buffers are rings of three (0xF6E90: [+0x1C] + 1 mod 3, locked with flags 0, filled by
+  0xF6890). The mission loading screen draws its picture in 64x64 tiles twice a frame from a pool of them, so a
+  buffer is refilled within the frame; in a race each is refilled about three frames on.
 
 ## Push buffers
 - **[game]** None: no push buffer function is linked in either xbe's D3D and game code never touches the push

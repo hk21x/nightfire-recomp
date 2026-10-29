@@ -10,7 +10,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at ed1796c (2026-10-29: replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at 8acd824 (2026-10-29: vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; to be tried on Windows
@@ -27,6 +27,20 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-29 - Mission loading screens whole on Windows (pc-features; sdk 8acd824)
+
+- Harry's F3 capture of a Driving.xbe loading screen (left half black): the picture is 64x64 P8 tiles on stage 3,
+  and the first draws carried later tiles' corners (draw 1 at 384,384; headless, draw 1 is at 0,0). Headless the same
+  buffer (00260C40) draws at x 64 and later at x 512 in one frame: EAGL refills its ring of three buffers a tile
+  (0xF6E90) within the frame, after a lock that blocks in D3D_BlockOnNonSurfaceResource 0x16CE90, which nothing
+  named; its wait (BlockOnTime) returns at once, so the render thread read the refilled buffer.
+- SDK 8acd824: D3D_BlockOnNonSurfaceResource hosted as BlockUntilNotBusy (wait for the render thread when the
+  buffer is still in a batch), 4831 signature from driving.toml (rescans reproduce both configs; default.xbe has none),
+  a placeholder address for other builds. About 155 calls a frame in a race; they wait only on a buffer still in
+  flight. Headless (no render thread) it is reached from 0xF6E90; NightFire smoke OK. Gate passed (EoN, PGR2, PGR1
+  smoke, PGR1's frame check: a live race); fork main fast-forwarded to it.
+- Next: Harry to check a mission loading screen, and the frame rate in a driving mission (a wait per refilled buffer).
 
 ### 2026-10-29 - Keypads on the keyboard: the left button and Enter confirm (pc-features)
 
