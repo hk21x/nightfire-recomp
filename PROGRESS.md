@@ -31,6 +31,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - v1.0.0's launcher offered no update (sdk 7f29c5f)
+
+- Harry: his v1.0.0 launcher offered no v1.0.1; he updated by hand. Both published launchers carry their versions
+  (v1.0.0, v1.0.1), and launcher_cli's check acting as v1.0.0 finds v1.0.1 and offers it: the logic holds. The
+  check runs once at the launcher's start and dropped any error (offline: no news), so launcher.log could not say
+  whether it ran before v1.0.1 was out (a window left open from the failed build) or got no answer.
+- SDK 7f29c5f: the start-up check logs what it found (the latest release and whether it is offered, or why there was
+  no answer). win/main.cpp checked against mingw's headers (a planted error is caught). Smoke OK for PGR2, PGR1 and
+  NightFire. It reaches players with the next release's launcher.
+
 ### 2026-10-30 - v1.0.0's launcher built only default.xbe (sdk 66a7066)
 
 - Harry, Windows 11, both discs: the launcher's build stopped preparing: "file SHA1 failed to read file
