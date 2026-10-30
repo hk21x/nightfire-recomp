@@ -213,6 +213,12 @@ in. Progress is in [PROGRESS.md](PROGRESS.md), and technical findings in [FINDIN
 - **OS** - Windows 10 or 11, 64 bit
 - **GPU** - with support for Direct3D 12 or Direct3D 11 (F1, Graphics, Renderer; applies at the next start)
 
+## License
+
+The port's own code is under the MIT License ([LICENSE](LICENSE)); the SDK and the third-party parts under theirs
+(`sdk/LICENSE`, `sdk/THIRD_PARTY.txt`, `third_party/`). The game is not included: its code is recompiled from your own
+disc on your PC.
+
 ## Credits
 
 - [Xbox XBE Recomp](https://github.com/TGP482/XboxXBE-Recomp), the recompiler and runtime this is built on.
