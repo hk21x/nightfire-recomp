@@ -29,6 +29,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - The wheel's scope zoom, again (pc-features)
+
+- Harry: the wheel did not zoom the sniper scope. The scope's zoom is continuous: 0xAAF21 adds its zoom control
+  (slot 6 through 0x6CA20) times the frame's time to the camera's angle (+0x104, kept to 0.2..3.14) and sets the
+  camera (0x25190); a notch's 70 ms d-pad press moved it a few frames' worth at most. Now the input thread counts
+  the notches through a scope (nf::ScopeZoom) and the look hook (0xA9CF0, the game's thread) steps the angle 0.8
+  times a notch up (nearer), out no further than the scope opened at, setting it through 0x25190. Not seen
+  headless (no scope there). Smoke OK.
+- Repo check before going public: 65 files tracked, history (58 commits, all by Harry's noreply address) holds no
+  game files, generated code, secrets or local paths beyond /home/harry folder names in PROGRESS; biggest blob the
+  embedded font (OFL). .gitignore now also ignores *.iso and *.xbe anywhere.
+
 ### 2026-10-30 - Keys: 1 the next weapon, 2 the next gadget; Shift and Ctrl pitch in the driving missions (pc-features)
 
 - Harry: on foot 1 switches the weapon and 2 to the gadget: 1 is now the d-pad's right (the next weapon, as the wheel)

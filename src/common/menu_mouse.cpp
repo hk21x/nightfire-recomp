@@ -2,8 +2,8 @@
 // (B), and Enter selects too (A's keys are crouch's in play). While a menu is up (nf::MenuUp, each exe's own test),
 // the mouse's buttons stop playing what they are bound to in play (fire, aim) and play A and B instead; each notch of
 // the wheel is a press of the d-pad (EoN's way). In play each notch cycles the weapon instead: on foot the d-pad's
-// right a notch down and left a notch up (the NightFire style's Cycle Weapon), through a scope the d-pad's up and
-// down (its zoom: Zoomed), in the car Black and White, on a mounted gun its style's; there the mouse's buttons fire
+// right a notch down and left a notch up (the NightFire style's Cycle Weapon), through a scope a zoom step
+// (ScopeZoom), in the car Black and White, on a mounted gun its style's; there the mouse's buttons fire
 // and zoom too (GunStyle).
 #include <algorithm>
 #include <chrono>
@@ -68,7 +68,11 @@ void MenuMouse(int port, input::Pad& p) {
     else if (gun == 4) next = input::kBlack, prev = input::kWhite;
     else if (gun == 6 || gun == 7) next = input::kDown, prev = input::kUp;
     else if (kDriving && gun < 0) next = input::kBlack, prev = input::kWhite;
-    else if (!kDriving && Zoomed()) next = input::kDown, prev = input::kUp;  // in a scope: the zoom (up nearer)
+    // through a scope the wheel zooms (a step of the scope's angle a notch, on the game's thread: ScopeZoom)
+    if (!kDriving && !menu && Zoomed() && notches) {
+        ScopeZoom(notches);
+        notches = 0;
+    }
     // on foot where Bond is not the player's to move (a door's keypad, a missile, a cutscene) A is the console's
     // confirm, which the keyboard has as crouch (C, Ctrl): the left button and Enter press it too
     if (!kDriving && !menu && !PlayerFree() && input::UsingKeyboard() && ((held & 1) || KeyHeld(0x0D)))

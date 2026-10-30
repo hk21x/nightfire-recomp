@@ -17,6 +17,7 @@
 // the homing weapons ('P', 'Q') still lock on.
 // Headless (no mouse): NF_MOUSE_TEST=dx,dy,from,to plays that many counts a frame for frames from..to.
 #include <algorithm>
+#include <atomic>
 #include <chrono>
 #include <cmath>
 #include <cstdio>
@@ -84,6 +85,36 @@ float ViewZoom() {
     float divisor = GetF(cam + kCamZoom);
     return std::clamp(GetF(cam + kCamFov) / (divisor > 0.01f ? divisor : 1.0f) / kGameFov, 0.02f, 2.0f);
 }
+
+// the mouse wheel through a scope: notches the input thread counted (nf::ScopeZoom), applied here on the game's
+// thread. The scope zooms by adding its zoom control's value (slot 6, 0x6CA20) times the frame's time to the
+// camera's angle (+0x104, 0xAAF21, kept to 0.2..3.14) and setting the camera again (0x25190), so a notch's short
+// press of the d-pad moved it a few frames' worth; a notch is a step of the angle instead, out no further than the
+// scope opened at
+std::atomic<int> g_zoom_notches{0};
+constexpr float kNotchStep = 0.8f, kNarrowest = 0.2f;
+constexpr uint32_t kSetCamera = 0x25190;  // cdecl (camera index, angle)
+
+void WheelZoom(X86Context& ctx) {
+    static float opened = 0;  // the angle the scope opened at
+    uint32_t cam = kernel::R32(kCameras);
+    bool zoomed = cam && ViewZoom() < kZoomedBelow;
+    int notches = g_zoom_notches.exchange(0);
+    if (!zoomed) {
+        opened = 0;
+        return;
+    }
+    float fov = GetF(cam + kCamFov);
+    if (opened == 0) opened = fov;
+    if (!notches) return;
+    float next = std::clamp(fov * std::pow(kNotchStep, float(notches)), kNarrowest, std::max(opened, kNarrowest));
+    if (next == fov) return;
+    uint32_t bits;
+    std::memcpy(&bits, &next, 4);
+    uint32_t eax = ctx.eax;
+    kernel::CallGuest(ctx, kSetCamera, {0, bits});
+    ctx.eax = eax;
+}
 }  // namespace
 
 X86_EXTERN_FUNC(__imp__sub_000A9CF0);
@@ -94,6 +125,7 @@ X86_FUNC(sub_000A9CF0) {
     if (mine) kernel::W32(actor + kTurn, kUnset);
     __imp__sub_000A9CF0(ctx, base);
     if (!mine) return;
+    WheelZoom(ctx);
     if (kernel::R32(actor + kTurn) == kUnset) {
         kernel::W32(actor + kTurn, was);
         return;
@@ -126,6 +158,7 @@ namespace nf {
 // a missile or a turret, in a cutscene
 bool PlayerFree() { return g_direct <= 2; }
 bool Zoomed() { return ViewZoom() < kZoomedBelow; }
+void ScopeZoom(int notches) { g_zoom_notches += notches; }
 
 // after 0xDE720 filled the controls: where the mouse does not turn the player itself, it plays the right stick
 // (style 0's: slot 0 and 3 its x, 4 and 5 its y, -1 to 1)

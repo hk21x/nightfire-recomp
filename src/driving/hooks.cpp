@@ -27,6 +27,7 @@ bool MenuKeys() {
 // yet; +0xC the gun's style (the player's controller style)
 bool PlayerFree() { return true; }  // default.xbe's questions (src/game/mouse.cpp)
 bool Zoomed() { return false; }
+void ScopeZoom(int) {}
 
 int GunStyle() {
     if (kernel::R32(0x1E455C + 4) != 1 || MenuUp()) return -1;
