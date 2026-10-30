@@ -10,8 +10,10 @@
 # recompiled code, derived from the game
 /generated/
 
-# user's own game files
+# user's own game files, wherever they are put
 /assets/
+*.iso
+*.xbe
 
 # runtime files
 settings.toml
