@@ -3,7 +3,8 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Released: v1.0.0 (2026-10-30), public, MIT; NightFireLauncher.exe from GitHub Actions.
+- Released: v1.0.1 (2026-10-30; v1.0.0's launcher built default.xbe alone), public, MIT; NightFireLauncher.exe from
+  GitHub Actions (v1.0.1 run 41045371616, sha256 7f18f58a...).
 - Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
   back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
   when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
