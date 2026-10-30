@@ -3,6 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
+- Released: v1.0.0 (2026-10-30), public, MIT; NightFireLauncher.exe from GitHub Actions.
 - Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
   back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
   when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
@@ -28,6 +29,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-30 - Release v1.0.0 (main ef4d3e2)
+
+- MIT License (as EoN's); the repository made public by Harry (GitHub reports visibility public, licence MIT).
+- Tag v1.0.0 on ef4d3e2: Actions run 41035237588 built NightFireLauncher.exe (2,322,432 bytes, sha256 9b667c54...)
+  and published https://github.com/hk21x/nightfire-recomp/releases/tag/v1.0.0 with docs/releases/v1.0.0.md.
+- Harry: the wheel's scope zoom works and resets on leaving the scope.
+- Next: Harry's run of the released launcher from an empty folder; reports from players.
 
 ### 2026-10-30 - The wheel's scope zoom resets when the scope closes (pc-features)
 
