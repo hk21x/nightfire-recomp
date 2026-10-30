@@ -29,6 +29,16 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - The wheel's scope zoom resets when the scope closes (pc-features)
+
+- Harry: zoomed with the wheel, the view stayed zoomed after leaving the scope, for any weapon. The step changed the
+  camera's angle (+0x104), which is lasting game state the scope never touches: 0xAAF21's continuous zoom is a free
+  camera's (flag +0x50 bit 0 of [+0xB8]), not the scope's. A weapon's zoom is the player's +0x860, copied into the
+  camera's divisor (+0xF4) each frame by the first person camera (0xA8BC6); 0xB7190 eases it to the target +0x864,
+  kept to 1 .. +0x868 (the weapon's most, at most 50), the zoom control (slot 6) multiplying the target while held;
+  leaving the scope sets it back to 1 (0xB9BD1). A notch now multiplies the target by 1.25 (down by as much), within
+  those limits, so the game's easing and reset apply. Smoke OK; Harry to check in a scope.
+
 ### 2026-10-30 - The wheel's scope zoom, again (pc-features)
 
 - Harry: the wheel did not zoom the sniper scope. The scope's zoom is continuous: 0xAAF21 adds its zoom control

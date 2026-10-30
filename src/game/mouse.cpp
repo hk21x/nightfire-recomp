@@ -87,33 +87,21 @@ float ViewZoom() {
 }
 
 // the mouse wheel through a scope: notches the input thread counted (nf::ScopeZoom), applied here on the game's
-// thread. The scope zooms by adding its zoom control's value (slot 6, 0x6CA20) times the frame's time to the
-// camera's angle (+0x104, 0xAAF21, kept to 0.2..3.14) and setting the camera again (0x25190), so a notch's short
-// press of the d-pad moved it a few frames' worth; a notch is a step of the angle instead, out no further than the
-// scope opened at
+// thread. A weapon's zoom is the player's +0x860, which the first person camera copies into its divisor (+0xF4,
+// 0xA8BC6) each frame; 0xB7190 eases it to the target +0x864, kept to 1 .. the weapon's most (+0x868, at most 50),
+// which its zoom control (slot 6) multiplies while held, and leaving the scope sets it back to 1 (0xB9BD1). A notch
+// multiplies the target, so the game's own easing, limits and reset apply
 std::atomic<int> g_zoom_notches{0};
-constexpr float kNotchStep = 0.8f, kNarrowest = 0.2f;
-constexpr uint32_t kSetCamera = 0x25190;  // cdecl (camera index, angle)
+constexpr float kNotchStep = 1.25f;
+constexpr uint32_t kZoomTarget = 0x864, kZoomMost = 0x868;  // the player's; the zoom itself +0x860
 
-void WheelZoom(X86Context& ctx) {
-    static float opened = 0;  // the angle the scope opened at
-    uint32_t cam = kernel::R32(kCameras);
-    bool zoomed = cam && ViewZoom() < kZoomedBelow;
+void WheelZoom(uint32_t actor) {
     int notches = g_zoom_notches.exchange(0);
-    if (!zoomed) {
-        opened = 0;
-        return;
-    }
-    float fov = GetF(cam + kCamFov);
-    if (opened == 0) opened = fov;
-    if (!notches) return;
-    float next = std::clamp(fov * std::pow(kNotchStep, float(notches)), kNarrowest, std::max(opened, kNarrowest));
-    if (next == fov) return;
-    uint32_t bits;
-    std::memcpy(&bits, &next, 4);
-    uint32_t eax = ctx.eax;
-    kernel::CallGuest(ctx, kSetCamera, {0, bits});
-    ctx.eax = eax;
+    if (!notches || ViewZoom() >= kZoomedBelow) return;
+    float most = std::min(GetF(actor + kZoomMost), 50.0f);
+    if (!(most > 1.0f)) return;  // a sight that does not zoom
+    float target = std::clamp(GetF(actor + kZoomTarget) * std::pow(kNotchStep, float(notches)), 1.0f, most);
+    SetF(actor + kZoomTarget, target);
 }
 }  // namespace
 
@@ -125,7 +113,7 @@ X86_FUNC(sub_000A9CF0) {
     if (mine) kernel::W32(actor + kTurn, kUnset);
     __imp__sub_000A9CF0(ctx, base);
     if (!mine) return;
-    WheelZoom(ctx);
+    WheelZoom(actor);
     if (kernel::R32(actor + kTurn) == kUnset) {
         kernel::W32(actor + kTurn, was);
         return;
