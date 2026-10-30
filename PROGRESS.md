@@ -11,7 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 0b5ff49 (2026-10-29: launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at 66a7066 (2026-10-30: the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -29,6 +29,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-30 - v1.0.0's launcher built only default.xbe (sdk 66a7066)
+
+- Harry, Windows 11, both discs: the launcher's build stopped preparing: "file SHA1 failed to read file
+  .../source/assets/Driving.xbe" (XbeRecomp.cmake:83), then "NightfireDriving is not built by this project". The fork
+  main's launcher wrote game.json's one "xbe" alone; the multi-xbe launcher (game.json "xbes" taken from the copy,
+  "exes" installed into play: a33f5fa) was only on the fork's eon branches, which EoN's releases build from.
+- SDK 66a7066: a33f5fa cherry-picked onto fork main (README conflict only). launcher_cli game + xbes on both images:
+  default.xbe and Driving.xbe written with their SHA-1s (USA 7e4b8f8a/8d46a023, Europe 796222e0/e0c41209). Smoke OK
+  for PGR2, PGR1 and NightFire (launcher code is in none of their builds; EoN ships this commit already).
+- docs/releases/v1.0.1.md; the v1.0.0 launcher builds its own tag, so the fix reaches players as v1.0.1's launcher
+  (its update offer).
 
 ### 2026-10-30 - Release v1.0.0 (main ef4d3e2)
 
