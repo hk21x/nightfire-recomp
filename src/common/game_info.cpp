@@ -67,7 +67,8 @@ bool HideFile(const std::string& path) {
     if (!nf::skip_intro) return false;
     std::string n;
     for (char c : path) n += char(std::tolower(static_cast<unsigned char>(c)));
-    for (const char* logo : {"\\25_fps\\07370048.xmv", "\\25_fps\\07380048.xmv"})
+    for (const char* logo : {"\\25_fps\\07370048.xmv", "\\25_fps\\07380048.xmv",   // PAL
+                             "\\30_fps\\07370048.xmv", "\\30_fps\\07380048.xmv"})  // USA
         if (n.size() >= std::char_traits<char>::length(logo) &&
             n.compare(n.size() - std::char_traits<char>::length(logo), std::string::npos, logo) == 0)
             return true;
@@ -214,16 +215,20 @@ const app::GameInfo app::kGame = {
     .pad = nf::MenuMouse,                 // changes a polled pad: the mouse in the menus
     .rumble = nullptr,                    // changes a rumble before it is set
     .achievements = nf::AchievementSet(), // conditions on default.xbe's Results page (src/common/achievement_set.cpp)
+    // the USA release (title 0x45410026, region North America): its default.xbe and Driving.xbe differ from the PAL
+    // ones in the signature and certificate alone; its certificate makes the console NTSC (pal_console), where it
+    // finds its own 30 fps movies and NTSC files. The Europe (En,Fr,De,Es,It,Nl,Sv) disc's are the PAL ones.
+    .same_code = {"7e4b8f8a54bacc61a5897ba5245fdd65bddc0752", "8d46a023dfbd5c89d4ee04fe28b24a9620de546a"},
     .squeeze_screen_programs = true,      // ultrawide: Driving.xbe draws its HUD and menus through vertex programs
     .edge_bars = true,                    // ultrawide: the sniper scope's black side bars reach the screen's sides
     .sharpen_2d = true,                   // text and HUD pictures enlarged sharp (Settings::sharp_2d turns it off)
-    .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise
+    .pal_console = true,                  // a PAL disc (region 4): the driving levels ask for NTSC\ files otherwise;
+                                          // the USA disc's certificate (region 1) keeps an NTSC console
     .hide_file = HideFile,                // skip_intro
     .mouse_look = true,                   // the mouse looks and aims
     .mouse_direct = true,                 // the view and the mounted guns turn by it directly (src/game/mouse.cpp,
                                           // src/driving/mouse.cpp), not as the right stick
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
     .texture_bound = TextureBound,        // the button pictures as the keys, the fonts with smooth edges
-    // optional, after these: .achievements (conditions on guest memory), .same_code (other releases' xbe SHA-1s with
-    // the same code), .wheel (what a steering wheel's force feedback follows)
+    // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };

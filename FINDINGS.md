@@ -14,6 +14,11 @@ game's own code and data, with its addresses).
 - **[console]** An unnamed XInitDevices (default.xbe 0x15753D) runs the USB driver, which touches the host controller
   at 0xFED00000 and faults.
 
+- **[game]** Releases: the USA disc's default.xbe (7e4b8f8a...) and Driving.xbe (8d46a023...) differ from the PAL
+  ones in the first 0x1000 bytes alone (signature, certificate: regions 1); the Europe (En,Fr,De,Es,It,Nl,Sv) disc's
+  are the PAL ones. The USA disc has eurocom/30_fps (not 25_fps), eurocom/config.txt ("AM"), English speech only
+  (no mis*fr/ge/sp.spe) and its own driving/misc.viv (NTSC\eng\*.mad). The certificate makes the console NTSC
+  (kernel PalConsole), so the same code finds the USA disc's files.
 - **[game]** EA's front end and driving levels are Driving.xbe; default.xbe (Eurocom) is the language select, intro
   movies, title and the on-foot levels. START at the title relaunches into Driving.xbe; the launch data carries the
   video standard (offset 0xE1C, 2 = PAL), which picks `PAL\<language>\` or `NTSC\<language>\` movies inside

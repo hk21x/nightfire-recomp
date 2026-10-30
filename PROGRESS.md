@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - The USA and Europe (En,Fr,De,Es,It,Nl,Sv) discs (pc-features)
+
+- Harry's two more images (.local/variants, unzipped; extracted with an XDVDFS reader in the scratchpad). Europe
+  (En,Fr,De,Es,It,Nl,Sv): the same xbes as the supported PAL release; smoke from the .iso OK on a PAL console.
+- USA: its xbes differ in the header alone (signature and certificate, regions 1), so GameInfo::same_code takes them
+  and the launcher's game.json lists "NTSC (USA)". Its certificate gives an NTSC console: it plays eurocom/30_fps
+  (skip_intro now hides the 30_fps EA and MGM logos too) and driving/misc.viv's NTSC\eng movies. Headless from the
+  extracted files and from the .iso: MGM logo, title, attract demo, START into Driving.xbe, the Paris intro, the
+  sniper tutorial, the chase, Mission Failed. Smoke's driving window (150 s) ends inside the NTSC movie after the
+  tutorial (one draw a frame), so it reads FAIL there; a 240 s run plays on (about 380 draws a frame).
+
 ### 2026-10-30 - Scope zoom on the wheel, Quit Game in the main menu (pc-features)
 
 - Mouse wheel through a scope: while player 1's view is zoomed in (its angle under 0.9 of 60 degrees: nf::Zoomed, the

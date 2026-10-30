@@ -11,19 +11,21 @@ reimplemented for Windows (Direct3D 12 or 11, XAudio2, SDL). It is not an emulat
 > This project does not include any game assets. You must provide the files from your own legally acquired copy of
 > the game to build and play.
 
-## Supported Version
+## Supported Versions
 
-The European (PAL) Xbox release of 007: NightFire (title id 45410026):
+The European (PAL) and North American (NTSC) Xbox releases of 007: NightFire (title id 45410026):
 
-| File | SHA-1 |
-| --- | --- |
-| `default.xbe` (on foot, menus) | `796222e048be3595c323b4c6d9795107132dc4ca` |
-| `Driving.xbe` (the driving missions) | `e0c41209d8979fcd03ac3d656be78759006023cb` |
+| Release | `default.xbe` (on foot, menus) | `Driving.xbe` (the driving missions) |
+| --- | --- | --- |
+| Europe (PAL; also the En, Fr, De, Es, It, Nl, Sv disc) | `796222e048be3595c323b4c6d9795107132dc4ca` | `e0c41209d8979fcd03ac3d656be78759006023cb` |
+| USA (NTSC) | `7e4b8f8a54bacc61a5897ba5245fdd65bddc0752` | `8d46a023dfbd5c89d4ee04fe28b24a9620de546a` |
 
-The game is two programs: the driving missions (Paris Prelude, Alpine Escape, Enemies Vanquished, Deep Descent,
-Island Infiltration) are a second xbe that the game launches and returns from. Both are recompiled, into
-`Nightfire.exe` and `NightfireDriving.exe`, and the switch between them happens on its own. The log names the SHA-1 of
-each xbe it found. Other releases (NTSC, for example) have not been checked.
+The two releases run the same code (their xbes differ only in the signature and certificate); each plays its own
+movies (25 or 30 frames a second) and files, as on a console of its region. The game is two programs: the driving
+missions (Paris Prelude, Alpine Escape, Enemies Vanquished, Deep Descent, Island Infiltration) are a second xbe that
+the game launches and returns from. Both are recompiled, into `Nightfire.exe` and `NightfireDriving.exe`, and the
+switch between them happens on its own. The log names the SHA-1 of each xbe it found. Other releases have not been
+checked.
 
 ## Getting Started
 
@@ -37,7 +39,7 @@ Windows and no admin rights needed.
 
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
-- Your own copy of the game (PAL): an `.iso` image of your disc, or a folder with the disc's files.
+- Your own copy of the game (PAL or USA): an `.iso` image of your disc, or a folder with the disc's files.
 - About 15 GB free, and an internet connection for the build tools.
 
 **Steps:**
