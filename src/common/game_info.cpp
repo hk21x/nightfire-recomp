@@ -97,12 +97,12 @@ std::array<uint16_t, 2> ShooterKeys(int c) {
         case kY: return {kSpace, 0};         // jump
         case kB: return {'Q', kBackspace};   // next weapon; back in the menus
         case kWhite: return {kMouseMiddle, 'F'};  // alt. fire
-        case kBlack: return {'G', 0};        // next gadget
+        case kBlack: return {'G', '2'};      // next gadget
         case kBack: return {'V', kTab};      // vision mode
-        case kUp: return {kArrowUp, '1'};    // the d-pad: gadget and zoom up and down, the weapon left and right
-        case kDown: return {kArrowDown, '2'};
+        case kUp: return {kArrowUp, 0};      // the d-pad: gadget and zoom up and down, the weapon left and right
+        case kDown: return {kArrowDown, 0};
         case kLeft: return {kArrowLeft, '3'};
-        case kRight: return {kArrowRight, '4'};
+        case kRight: return {kArrowRight, '1'};  // 1 the next weapon, 2 the next gadget (Black)
         case kStart: return {kEscape, 'P'};
         default: return {0, 0};
     }
@@ -118,8 +118,8 @@ std::array<uint16_t, 2> DrivingKeys(int c) {
         case kLT: return {'S', 0};                   // brake, reverse
         case kLSLeft: return {'A', kArrowLeft};      // steer
         case kLSRight: return {'D', kArrowRight};
-        case kLSUp: return {kArrowUp, 0};            // the menus
-        case kLSDown: return {kArrowDown, 0};
+        case kLSUp: return {kArrowUp, kLeftShift};   // pitch (Deep Descent's dive) and the menus
+        case kLSDown: return {kArrowDown, kLeftCtrl};
         case kA: return {kMouseLeft, kEnter};        // fire; select in the menus
         case kB: return {kSpace, kBackspace};        // handbrake; back in the menus
         case kX: return {kMouseRight, 'E'};          // the gadget

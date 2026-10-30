@@ -29,6 +29,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-30 - Keys: 1 the next weapon, 2 the next gadget; Shift and Ctrl pitch in the driving missions (pc-features)
+
+- Harry: on foot 1 switches the weapon and 2 to the gadget: 1 is now the d-pad's right (the next weapon, as the wheel)
+  and 2 Black (the next gadget, with G); the d-pad's up and down keep the arrows alone (1 and 2 were theirs), left
+  keeps 3. Driving: Left Shift is the left stick's up and Left Ctrl its down, beside the arrows (pitch: Deep
+  Descent). Only the defaults change: keys bound anew in settings.toml stay. README tables.
+
 ### 2026-10-30 - The USA and Europe (En,Fr,De,Es,It,Nl,Sv) discs (pc-features)
 
 - Harry's two more images (.local/variants, unzipped; extracted with an XDVDFS reader in the scratchpad). Europe

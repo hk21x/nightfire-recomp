@@ -101,11 +101,11 @@ any time; changes are saved at once to `settings.toml`.
 | Action, reload | E, R |
 | Jump | Space |
 | Crouch | C or Left Ctrl |
-| Weapons | Mouse wheel (in a scope it zooms), or the left and right arrows / 3 and 4 |
-| Next weapon | Q |
+| Next weapon | 1, the mouse wheel (in a scope it zooms), or the right arrow (left arrow or 3: the one before) |
+| Next weapon (another) | Q |
 | Alt. fire | Middle mouse button or F |
-| Next gadget | G |
-| Gadget / zoom | Up and down arrows, or 1 and 2 |
+| Next gadget | 2 or G |
+| Gadget / zoom | Up and down arrows |
 | Vision mode | V or Tab |
 | Pause | Esc or P |
 
@@ -119,6 +119,7 @@ the mouse wheel scrolls, Enter selects and Backspace goes back.
 | --- | --- |
 | Gas / brake and reverse | W / S |
 | Steer | A / D, or the left and right arrows |
+| Pitch up / down (Deep Descent) | Up / down arrows, or Left Shift / Left Ctrl |
 | Fire weapon | Left mouse button or Enter |
 | Gadget | Right mouse button or E |
 | Handbrake | Space |
