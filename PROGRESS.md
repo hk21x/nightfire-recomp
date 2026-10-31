@@ -31,6 +31,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - MinGit's busybox edition (launcher/toolchain.json)
+
+- From PGR2's session: a PGR2 player's builds stopped at git submodule: MinGit runs it as a script under MSYS2's sh,
+  whose forks died on their PC (0xC0000142), CMake's FetchContent too; the busybox edition fixed it there. NightFire
+  takes the same entry (size and SHA-256 checked against the download; launcher_cli tool git installs it, cmd/git.exe
+  there). Launchers read toolchain.json from main at each build, so no release; each reinstalls Git once. Not run on
+  Windows here.
+
 ### 2026-10-31 - A player's build stopped on an exFAT-like drive (sdk c4000f8)
 
 - A player's launcher.log (GitHub, v1.0.1, USA disc, E: drive): git "detected dubious ownership" on the launcher's
