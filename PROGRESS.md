@@ -31,6 +31,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - README: install sizes
+
+- Harry's request to every game (PGR2's fff8d0f). NightFire: disc image 7.3 GB (7,825,162,240 bytes, both discs), copied
+  only when it cannot be hard-linked (core/builder.cpp), a folder linked; tools about 1.83 GB and source about 0.33 GB
+  are PGR2's measurement of the same toolchain, not NightFire's; 1.4 GB download from a NightFire player's log. So
+  about 10 GB or about 2.5 GB installed: estimates, not measured on a NightFire install. The 15 GB first build kept
+  (build output on Windows not measured). The source build's "about 15 GB" and Remove the build files (not in this
+  README) unchanged.
+
 ### 2026-10-31 - MinGit's busybox edition (launcher/toolchain.json)
 
 - From PGR2's session: a PGR2 player's builds stopped at git submodule: MinGit runs it as a script under MSYS2's sh,

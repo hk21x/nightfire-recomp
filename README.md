@@ -40,7 +40,10 @@ Windows and no admin rights needed.
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
 - Your own copy of the game (PAL or USA): an `.iso` image of your disc, or a folder with the disc's files.
-- About 15 GB free, and an internet connection for the build tools.
+- About 15 GB free for the first build, and an internet connection for about 1.4 GB of build tools. About 10 GB stays
+  installed when the launcher has to copy your disc image (7.3 GB of that), which it does from another drive or on a
+  drive such as exFAT; about 2.5 GB when it can link to the image on the same NTFS drive, or to a folder of the disc's
+  files.
 
 **Steps:**
 1. Download `NightFireLauncher.exe` from the [latest release](https://github.com/hk21x/nightfire-recomp/releases/latest).
