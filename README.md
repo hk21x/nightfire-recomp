@@ -40,10 +40,9 @@ Windows and no admin rights needed.
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
 - Your own copy of the game (PAL or USA): an `.iso` image of your disc, or a folder with the disc's files.
-- About 15 GB free for the first build, and an internet connection for about 1.4 GB of build tools. About 10 GB stays
-  installed when the launcher has to copy your disc image (7.3 GB of that), which it does from another drive or on a
-  drive such as exFAT; about 2.5 GB when it can link to the image on the same NTFS drive, or to a folder of the disc's
-  files.
+- About 3 GB free, plus room for your copy of the game, and an internet connection for about 1.4 GB of build tools.
+  Your copy takes 7.3 GB when the launcher has to copy your disc image, which it does from another drive or on a drive
+  such as exFAT; nothing more when it can link to the image on the same NTFS drive, or to a folder of the disc's files.
 
 **Steps:**
 1. Download `NightFireLauncher.exe` from the [latest release](https://github.com/hk21x/nightfire-recomp/releases/latest).
@@ -70,7 +69,7 @@ To remove everything, delete the launcher and its `NightFire` folder (keep `play
 
 **You need:** Windows 10 or 11 (64 bit), [Git](https://git-scm.com/download/win), Visual Studio 2022 (Community is
 fine) with **Desktop development with C++** (`build.bat` offers to add **C++ Clang tools for Windows** and **C++ CMake
-tools for Windows**), about 15 GB free, and your disc's files: `default.xbe`, `Driving.xbe` and the game's folders.
+tools for Windows**), about 3 GB free, plus room for your copy of the game, and your disc's files: `default.xbe`, `Driving.xbe` and the game's folders.
 
 1. Clone the repository with its SDK:
    ```

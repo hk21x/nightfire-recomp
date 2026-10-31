@@ -31,6 +31,12 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - README: about 3 GB free, plus the game
+
+- Harry's decision, through PGR2's session: "About 3 GB free, plus room for your copy of the game" in both places,
+  replacing this README's 15 GB figures (18bd768). When the 7.3 GB copy happens stays on the launcher's line. The
+  launcher window says the same on fork main (reaches NightFire with its SDK and a new launcher).
+
 ### 2026-10-31 - README: install sizes
 
 - Harry's request to every game (PGR2's fff8d0f). NightFire: disc image 7.3 GB (7,825,162,240 bytes, both discs), copied
