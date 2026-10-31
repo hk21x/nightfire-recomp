@@ -3,8 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Released: v1.0.1 (2026-10-30; v1.0.0's launcher built default.xbe alone), public, MIT; NightFireLauncher.exe from
-  GitHub Actions (v1.0.1 run 41045371616, sha256 7f18f58a...).
+- Released: v1.0.2 (public, MIT); NightFireLauncher.exe from GitHub Actions (run 41246356420).
 - Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
   back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
   when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
@@ -30,6 +29,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-01 - Release v1.0.2 (main ed66329, sdk 37fa3dc)
+
+- Tag v1.0.2: Actions run 41246356420, NightFireLauncher.exe 2,338,816 bytes (sha256 cd85e43a...). Harry's call to ship; his
+  graphics shots show MSAA, FXAA and sharpening running, but prompts, driving menu panels and snow on this SDK were
+  not reported. Watch for wrong textures (D3D12 stage memo).
+- TGP482's own NightFire port (V1, 2026-10-31) compared: ahead on uncapped frame rate, HDR, ambient occlusion, SMAA,
+  texture replacement, gyro, 5.1; no licence, so ideas only. Our order if pursued: AO and SMAA in the SDK, small
+  items, high frame rate last.
 
 ### 2026-10-31 - README: graphics settings compared, ultrawide, the menu, Discord
 
