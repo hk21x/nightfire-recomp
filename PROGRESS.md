@@ -38,6 +38,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   crop); nothing else is altered. docs/img: wipe, edges, detail (the castle's windows), sharpness, menu (Harry had the ultrawide shot under Controllers removed).
   MSAA cleans edges, FXAA softens, render scale smoothest, sharpening 100% gritty on stone: confirmed by these shots,
   which also show MSAA, FXAA and sharpening running on Windows with NightFire.
+- The wipe is animated as PGR2's: 800x520, 58 frames (50 ms, 600 ms at each end), a 1200x780 crop on the castle.
 - README Graphics settings and Community and Support (Discord); v1.0.2 notes: the font, graphics settings.
 
 ### 2026-10-31 - SDK at the fork's main 37fa3dc, for v1.0.2
