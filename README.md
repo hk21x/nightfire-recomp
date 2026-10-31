@@ -135,6 +135,49 @@ right button zooms and R reloads.
 
 **Controllers:** Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
+![Ultrawide: the view widened to 21:9, the HUD kept at 16:9](docs/img/nightfire-ultrawide.webp)
+
+<p align="center">
+  <img src="docs/img/nightfire-menu.webp" alt="The pause screen with its text in the new font and a PC Settings choice" width="800">
+  <br>
+  <i>The game's text redrawn from Sour Gummy Black, with PC Settings on the pause screen and your keys in the prompts.</i>
+</p>
+
+## Graphics settings
+
+In the settings window (F1, Graphics). These are shots of one spot at 3440x1440, taken one after another and lined up, so
+the falling snow and the guards differ between them.
+
+<p align="center">
+  <img src="docs/img/nightfire-settings-wipe.webp" alt="A wipe between all settings off and render scale 200%, MSAA 4x and sharpening 50%" width="800">
+  <br>
+  <i>All off vs. a good start for a capable PC: render scale 200%, MSAA 4x, sharpening 50%.</i>
+</p>
+
+<p align="center">
+  <img src="docs/img/nightfire-settings-edges.webp" alt="Close-up of an arch and a lamp post with all off, MSAA 4x, FXAA and render scale 200%" width="800">
+  <br>
+  <i>Edges, enlarged three times.</i>
+</p>
+
+<p align="center">
+  <img src="docs/img/nightfire-settings-detail.webp" alt="The castle's row of lit windows with all off, MSAA 4x, FXAA and render scale 200%" width="800">
+  <br>
+  <i>The castle's windows, enlarged twice.</i>
+</p>
+
+- **MSAA** smooths the edges of the 3D scene and keeps textures sharp. The more samples, the slower.
+- **FXAA** smooths the finished frame, HUD included, and softens it a little.
+- **Render scale** draws the picture larger than the screen: the smoothest fine detail, and the slowest.
+
+<p align="center">
+  <img src="docs/img/nightfire-settings-sharpness.webp" alt="A stone wall with all off, sharpening 50%, sharpening 100% and all three together" width="800">
+  <br>
+  <i>Sharpening, enlarged twice.</i>
+</p>
+
+- **Sharpening** makes the picture crisper. Around 50% is a good start; 100% turns stone walls gritty.
+
 ## Features
 
 ### Display
@@ -149,7 +192,7 @@ right button zooms and R reloads.
 
 ### Graphics
 - **Render Scale** - Renders at a percentage of the screen.
-- **Anisotropic Filtering** and **Antialiasing** (MSAA or FXAA).
+- **Anisotropic Filtering**, **MSAA**, **FXAA** and **Sharpening** - See [Graphics settings](#graphics-settings).
 - **Clean Fonts** - The game's text, in both xbes, is redrawn at eight times the console's resolution from
   [Sour Gummy Black](https://fonts.google.com/specimen/Sour+Gummy), a close match for the game's own face, so it stays
   smooth at any resolution.
@@ -193,6 +236,11 @@ right button zooms and R reloads.
 Plays on foot and in the driving missions on Windows, with saves; mouse aiming, the keyboard prompts, modern button
 pictures, clean fonts, PC Settings (main menu and pause screen), Hide HUD, Quit Game, widescreen and ultrawide are
 in. Progress is in [PROGRESS.md](PROGRESS.md), and technical findings in [FINDINGS.md](FINDINGS.md).
+
+## Community and Support
+
+Join the [Discord server](https://discord.gg/PQjkKsdtc) for help getting the game running, to report problems,
+and to talk about the port with other players.
 
 ## Troubleshooting
 

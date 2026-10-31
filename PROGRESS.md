@@ -31,6 +31,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-10-31 - README: graphics settings compared, ultrawide, the menu, Discord
+
+- Harry's 3440x1440 shots (Alpine level) on one spot: the view drifted between them (up to 73 px) and snow and guards
+  moved, so each panel's crop is lined up to the default shot by a measured shift (squared differences around the
+  crop); nothing else is altered. docs/img: wipe, edges, detail (the castle's windows), sharpness, ultrawide, menu.
+  MSAA cleans edges, FXAA softens, render scale smoothest, sharpening 100% gritty on stone: confirmed by these shots,
+  which also show MSAA, FXAA and sharpening running on Windows with NightFire.
+- README Graphics settings and Community and Support (Discord); v1.0.2 notes: the font, graphics settings.
+
 ### 2026-10-31 - SDK at the fork's main 37fa3dc, for v1.0.2
 
 - Brings D3D12's texture stage memo keyed by the header's contents and repeat draws skipping lookups (PGR2's session:
