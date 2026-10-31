@@ -135,8 +135,6 @@ right button zooms and R reloads.
 
 **Controllers:** Xbox, PlayStation and Switch controllers, with hot plugging and rumble.
 
-![Ultrawide: the view widened to 21:9, the HUD kept at 16:9](docs/img/nightfire-ultrawide.webp)
-
 <p align="center">
   <img src="docs/img/nightfire-menu.webp" alt="The pause screen with its text in the new font and a PC Settings choice" width="800">
   <br>
