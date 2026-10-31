@@ -12,7 +12,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 66a7066 (2026-10-30: the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at c4000f8 (2026-10-31: the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -30,6 +30,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-10-31 - A player's build stopped on an exFAT-like drive (sdk c4000f8)
+
+- A player's launcher.log (GitHub, v1.0.1, USA disc, E: drive): git "detected dubious ownership" on the launcher's
+  own clone, each Build the same. Reproduced with GIT_TEST_ASSUME_DIFFERENT_OWNER=1 in launcher_cli.
+- SDK c4000f8: BuildEnv sets safe.directory=* through GIT_CONFIG_COUNT/KEY/VALUE, for the launcher's git, submodules
+  and CMake's FetchContent, the player's settings unchanged. With the forced error, a fresh clone and the folder
+  that had failed both get through tag and submodule. CMake's FetchContent not run so (same environment).
+- The pointer brings 15 commits of the fork's main (XDK 4039, vertex blending, MSAA and FXAA apart, ultrawide). Smoke OK
+  for NightFire, PGR2, PGR1 (not EoN, nor PGR1's repro: the launcher is in none of their builds; those commits are
+  their sessions' own, gated there); wincheck of src/ OK. Not played on Windows yet.
+- docs/releases/v1.0.2.md.
 
 ### 2026-10-30 - v1.0.0's launcher offered no update (sdk 7f29c5f)
 
