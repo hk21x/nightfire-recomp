@@ -39,7 +39,11 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   60); the frame timer takes it (0x10AE50 from 0x59920) and the steps are 1 / it (0x95380, 0xB49F0, 0x5CEB0). The USA
   disc runs the same code at 60. src/driving/refresh.cpp: for the call alone a PAL standard reads as NTSC-M, so 60;
   the movies and files still PAL. Headless unpaced: 62.5 a second (16 ms steps), so 60 paced. The mission clock fell
-  31 s over 1800 frames in 31.6 s of real time: real time, not faster. Smoke OK. Harry to check on Windows.
+  31 s over 1800 frames in 31.6 s of real time: real time, not faster. Harry to check on Windows.
+- 813f7ba went to main on a failed smoke (my push did not wait for the result): the driving window of 150 s ended
+  inside paris2.mad, the movie after the tutorial, which now comes later in frames (the USA disc failed the same way).
+  A 260 s run plays on into the chase and Mission Failed. SMOKE_NEXT_SECS 240: SMOKE OK on the PAL files (433 draws a
+  frame) and the USA image (438).
 
 ### 2026-11-04 - SDK at the fork's main 97b1654
 
