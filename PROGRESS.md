@@ -11,7 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 37fa3dc (2026-10-31: D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at 97b1654 (2026-11-04: F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -29,6 +29,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-04 - SDK at the fork's main 97b1654
+
+- The SDK session's request (Harry wants every game on it): a fast-forward of 55 commits from 37fa3dc, the 4831
+  signatures untouched: the F1 window overhaul, SMAA, sharp scaling, alpha edges with MSAA, Enhanced world textures
+  (off; F1 warns of hitches), low latency, the prebuilt-package launcher (XBE_GAME_DLL opt-in, unused here).
+  recompile_Nightfire and recompile_NightfireDriving OK; rescans reproduce game.toml and driving_game.toml; smoke OK
+  (driving 208 draws a frame); wincheck of src/ OK. Not yet played on Windows.
 
 ### 2026-11-01 - Release v1.0.2 (main ed66329, sdk 37fa3dc)
 
