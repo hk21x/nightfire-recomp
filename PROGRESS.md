@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Released: v1.0.2 (public, MIT); v1.0.3 withdrawn; v1.1.0 drafted (prebuilt package), to be published by Harry.
+- Released: v1.1.0 (2026-11-04, public, MIT): the prebuilt package, driving at 60 on PAL, SDK 97b1654. v1.0.3 withdrawn.
 - Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
   back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
   when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
@@ -29,6 +29,13 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-04 - Release v1.1.0 published (prebuilt)
+
+- Harry published v1.1.0 (14:59 UTC) with the notes of docs/releases/v1.1.0.md: NightFireLauncher.exe (2,501,632 bytes),
+  NightFire-package.zip (75,977,938 bytes, sha256 cdd3542d..., matching its .json) and the .json. The package holds the
+  two exes, the Visual C++ runtime, d3dcompiler_47 and compiler\ (clang, lld-link, the exes' import libraries, the
+  configs, XDK layouts and headers): no game code. launcher_cli as v1.0.2: v1.1.0 offered.
 
 ### 2026-11-04 - v1.1.0 drafted; v1.0.3 withdrawn
 
