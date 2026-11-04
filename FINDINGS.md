@@ -37,6 +37,8 @@ game's own code and data, with its addresses).
 - **[console]** The device holds the current gamma ramp (CDevice_GammaRamps, two slots) and a console starts with a
   linear one: titles read it back with GetGammaRamp (Driving.xbe 0x165E70) as the base of their fades.
 - **[game]** Driving.xbe's fades scale the ramp saved at 0x23FC08 (0xE7740, per channel base * scale + 0.5).
+- **[game]** Driving.xbe runs at its video standard's refresh: 0x117DA0 returns [0x1A204C + 4 * [0x243540]] (60, 60, 50
+  for PAL-I, 60), the frame timer's rate (0x10AE50) and 1 / its step; the PAL disc's driving half ran at 50.
 - **[console]** A vertex or index buffer's lock (Driving.xbe 0x16B4C0, flags without NOOVERWRITE) blocks in
   D3D_BlockOnNonSurfaceResource (0x16CE90), not BlockOnResource; default.xbe does not link it. Unnamed it waited on
   guest push buffer state only, and the render thread read buffers the title had refilled.

@@ -30,6 +30,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - Driving at 60 on the PAL disc
+
+- Harry: driving 50 FPS (on foot 60), the same at render scale 100% and 200% and in v1.0.2, so not the GPU nor the new
+  SDK. XBE_PERF: 50.0 fps flat, the renderer 6 ms a frame and idle the rest, the title thread 5 ms recording and
+  waiting (one read-back a frame). Headless and unpaced Driving.xbe made exactly 50 frames a second: its own limit.
+- Driving.xbe's rate 0x117DA0 is the refresh of the video standard [0x243540] from the table 0x1A204C (60, 60, 50 PAL-I,
+  60); the frame timer takes it (0x10AE50 from 0x59920) and the steps are 1 / it (0x95380, 0xB49F0, 0x5CEB0). The USA
+  disc runs the same code at 60. src/driving/refresh.cpp: for the call alone a PAL standard reads as NTSC-M, so 60;
+  the movies and files still PAL. Headless unpaced: 62.5 a second (16 ms steps), so 60 paced. The mission clock fell
+  31 s over 1800 frames in 31.6 s of real time: real time, not faster. Smoke OK. Harry to check on Windows.
+
 ### 2026-11-04 - SDK at the fork's main 97b1654
 
 - The SDK session's request (Harry wants every game on it): a fast-forward of 55 commits from 37fa3dc, the 4831
