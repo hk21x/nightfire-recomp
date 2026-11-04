@@ -3,7 +3,7 @@
 Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Status
-- Released: v1.0.3 (public, MIT); NightFireLauncher.exe from GitHub Actions (run 41847389890, sha256 11e5f7bf...).
+- Released: v1.0.2 (public, MIT); v1.0.3 withdrawn; v1.1.0 drafted (prebuilt package), to be published by Harry.
 - Milestone: 3 - plays on Windows. Harry (2026-10-28, D3D12, RX 7900 XT): the Paris driving mission to its end and
   back, then 8 minutes of default.xbe's on-foot play with his saves: no traps, 60 frames a second (a slow frame only
   when a shader compiles). Fixed on the way: black screen (gamma), mission-end crash (Driving.xbe's Reset), menu
@@ -29,6 +29,15 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-04 - v1.1.0 drafted; v1.0.3 withdrawn
+
+- Harry's test of the package: a launcher with NightFire-package.zip beside it, the USA image, over an install the
+  v1.0.2 launcher had built from source: unpack 1.5 s, the game's code 19.5 s (66 files, 16 at a time), 21 s in all;
+  the game ran from play (USA image accepted as the same code, into Driving.xbe and its mounted gun).
+- Tag v1.1.0 on 52739bb: Actions run 41850674533 made the draft with the launcher. Harry removed v1.0.3's release, so
+  v1.1.0's notes take its changes (driving at 60 on PAL, the settings window and options); the draft's text was set
+  at the tag, so Harry pastes docs/releases/v1.1.0.md into it, attaches the package and publishes.
 
 ### 2026-11-04 - The prebuilt package (for v1.1.0)
 
