@@ -3,6 +3,9 @@
 # added by hand goes below. Sign with config/nightfire.toml (see there).
 includes = ["driving_game.toml"]
 
+[xbe]
+library = "NightfireDriving.dll"  # the game code DLL; this config is the one the build on the player's PC reads
+
 # The names default.xbe's hand config proves are signed into sdk/xdk/4831 and found here by the scan; every name both
 # xbes have was compared by its call chain (callees 5 deep) and agrees (0.97 or more).
 [symbols]

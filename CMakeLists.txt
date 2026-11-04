@@ -21,6 +21,12 @@ else()
     FetchContent_MakeAvailable(xbe_sdk)
     set(SDK ${xbe_sdk_SOURCE_DIR})
 endif()
+# on Windows each program's code is a DLL the first start builds on the player's PC from their disc (sdk's
+# cmake/XbeRecomp.cmake): a release's package holds the runtime and the compiler, no game code. The USA and PAL discs run
+# the same code, so one package serves both. The harness links the code in
+if(WIN32)
+    set(XBE_GAME_DLL ON)
+endif()
 include(${SDK}/cmake/XbeRecomp.cmake)
 
 file(GLOB XBE_HOST_SOURCES CONFIGURE_DEPENDS src/*/*.cpp)

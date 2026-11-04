@@ -30,6 +30,21 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-04 - The prebuilt package (for v1.1.0)
+
+- Harry: NightFire as PGR2 (1.6.0) and Agent Under Fire (1.0.0) ship: a package (runtime, exes, compiler, no game
+  code), the player's PC compiling each program's code into a DLL from their disc. As AUF's opt-in (b6443c6,
+  d317dcd, 290e7ef): XBE_GAME_DLL on Windows (CMakeLists.txt), [xbe] library Nightfire.dll / NightfireDriving.dll
+  in nightfire.toml and driving.toml (the first start finds each exe's config by its xbe's name, case aside), one
+  "package" in game.json (NightFire-package.zip: the USA and PAL discs run the same code, as PGR2's one package),
+  release-package.bat (sdk/scripts/release-package.bat for Nightfire and NightfireDriving), the release workflow
+  makes a draft. AUF's DLL-mode fix (a function declared X86_EXTERN_FUNC and overridden in one file) has no case here;
+  every __imp__ our code calls is in the generated imports.def or exports.def.
+- Linux: both recompile (exports.def, imports.def, hook_exports.h now written), smoke OK (driving 468 draws a frame).
+  The DLL build is Windows-only: Harry to build, make the package and test it from an empty folder before the tag.
+- README: the launcher flow (Get the game ready; old installs offered A faster way to play), the release's files, the
+  package for maintainers. docs/releases/v1.1.0.md.
+
 ### 2026-11-04 - Release v1.0.3
 
 - Harry: driving at 60 works on Windows; ship it with SDK 97b1654. docs/releases/v1.0.3.md; tag v1.0.3.

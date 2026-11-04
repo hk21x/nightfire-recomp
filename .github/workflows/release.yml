@@ -1,6 +1,6 @@
 # <short>Launcher.exe, built on GitHub's Windows machines (it holds no game code: players build the game with it).
 # A push to main that touches the launcher builds it (an artifact); a tag v* builds it and publishes the release
-# with the exe and docs/releases/<tag>.md as its notes.
+# with the exe and docs/releases/<tag>.md as its notes: as a draft, published by hand once the package is attached.
 name: Launcher
 
 on:
@@ -50,5 +50,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           notes="docs/releases/${GITHUB_REF_NAME}.md"
-          gh release create "$GITHUB_REF_NAME" "out/launcher/${GAME_SHORT}Launcher.exe" \
+          # a draft: the package is built on a PC with the game. Attach NightFire-package.zip and its .json, then publish
+          gh release create "$GITHUB_REF_NAME" "out/launcher/${GAME_SHORT}Launcher.exe" --draft \
             --title "$GAME_TITLE PC port ${GITHUB_REF_NAME#v}" --notes-file "$notes"

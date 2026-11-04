@@ -29,20 +29,18 @@ checked.
 
 ## Getting Started
 
-There are two ways to get the game running. Both build it on your own PC from your own disc: the game's code is
-never downloaded, only the tools and this project's source.
+The launcher sets the game up on your PC from your own disc: no Visual Studio, no Git and no command line, nothing
+installed in Windows and no admin rights needed. A release holds the runtime and a compiler, and none of the game's
+code: that is compiled on your PC from your disc.
 
 ### The launcher (recommended)
-
-`NightFireLauncher.exe` does everything for you: no Visual Studio, no Git, no command line, nothing installed in
-Windows and no admin rights needed.
 
 **You need:**
 - Windows 10 or 11, 64 bit, and a GPU with Direct3D 12 or Direct3D 11.
 - Your own copy of the game (PAL or USA): an `.iso` image of your disc, or a folder with the disc's files.
-- About 3 GB free, plus room for your copy of the game, and an internet connection for about 1.4 GB of build tools.
-  Your copy takes 7.3 GB when the launcher has to copy your disc image, which it does from another drive or on a drive
-  such as exFAT; nothing more when it can link to the image on the same NTFS drive, or to a folder of the disc's files.
+- Room for your copy of the game and an internet connection for the package. Your copy takes 7.3 GB when the
+  launcher has to copy your disc image, which it does from another drive or on a drive such as exFAT; nothing more
+  when it can link to the image on the same NTFS drive, or to a folder of the disc's files.
 
 **Steps:**
 1. Download `NightFireLauncher.exe` from the [latest release](https://github.com/hk21x/nightfire-recomp/releases/latest).
@@ -50,18 +48,25 @@ Windows and no admin rights needed.
    `NightFire` folder beside it. Windows may warn about an unrecognised app: choose **More info**, then **Run anyway**.
 3. **Your game:** choose your disc image or the folder with the disc's files. The launcher checks that it is the
    supported release.
-4. **Build:** accept the license terms for Microsoft's C++ libraries and Windows SDK (the build uses them), then press
-   **Build**. It downloads portable build tools (Clang, CMake, Ninja, Git and Microsoft's libraries), this project's
-   source, and builds the game. The first build takes 30 to 90 minutes. You can stop it at any time; it carries on
-   where it left off.
-5. **Play:** press **Play**.
+4. Press **Get the game ready**. The launcher downloads the package and compiles the game's code from your disc; how
+   long that takes depends on your PC and connection.
+5. **Play:** press **Play**. When a new version is out, the launcher offers **Update**.
 
-When this project is updated the launcher shows **Update**: press it, then Play.
+Installed by an earlier launcher, which built the game from its source? The launcher offers **A faster way to play**:
+press **Update**, and your saves and settings stay as they are.
+
+### What's in a release
+
+| File | What it is |
+|---|---|
+| `NightFireLauncher.exe` | **The only file to download by hand.** It fetches the rest itself. |
+| `NightFire-package.zip` | The runtime and the compiler, for both the PAL and the USA disc, and no game code. The launcher fetches it; don't unzip it by hand. |
+| `NightFire-package.zip.json` | The size and SHA-256 the launcher checks the download against. You can ignore it. |
 
 Files, all under the `NightFire` folder beside the launcher:
-- `play\` the game: `Nightfire.exe`, `NightfireDriving.exe`, `settings.toml`, `hdd\` (saves), `logs\` (the game's logs)
-- `launcher.log` the launcher's log (send it with any problem building)
-- `tools\` and `source\` the build tools and the source
+- `play\` the game: `Nightfire.exe`, `NightfireDriving.exe`, their compiled code (`Nightfire.dll`,
+  `NightfireDriving.dll`), `settings.toml`, `hdd\` (saves), `logs\` (the game's logs)
+- `launcher.log` the launcher's log (send it with any problem)
 
 To remove everything, delete the launcher and its `NightFire` folder (keep `play\hdd` if you want your saves).
 
@@ -79,10 +84,13 @@ tools for Windows**), about 3 GB free, plus room for your copy of the game, and 
    Cloned without `--recurse-submodules`? Run `git submodule update --init`.
 2. Put your game files in the `assets` folder: `assets\default.xbe` with `Driving.xbe` and the game's folders
    (`eurocom`, `driving` ...) beside it, or your disc's `.iso`.
-3. Run `build.bat`. The first build recompiles both xbe files and takes 30 to 90 minutes; later builds are quicker.
+3. Run `build.bat`. The first build recompiles both xbe files, which takes a while; later builds are quicker.
 4. Run `out\build\release\Nightfire.exe`. It finds the `assets` folder beside itself or in any folder above it.
 
-`launcher.bat` builds `NightFireLauncher.exe` itself. Files the game writes beside the exe: `settings.toml`, `hdd\`
+On Windows each program's code is a DLL (`Nightfire.dll`, `NightfireDriving.dll`). For a release, `release-package.bat`
+(after `build.bat`) makes `NightFire-package.zip` and its `.json`: a tag makes a draft release with the launcher, and
+the package is attached to it by hand before it is published. Game code is never uploaded. `launcher.bat` builds
+`NightFireLauncher.exe` itself. Files the game writes beside the exe: `settings.toml`, `hdd\`
 (saves; delete it to start again from a first boot), `logs\`, `shadercache.bin` (compiled shaders) and `CrashDumps\`
 if it crashes.
 
@@ -212,8 +220,7 @@ the falling snow and the guards differ between them.
 - Every key and mouse button can be rebound in the settings window (F1, Controls tab).
 
 ### General
-- **Launcher** - `NightFireLauncher.exe`: choose your disc, Build, Play, Update; portable build tools, nothing
-  installed.
+- **Launcher** - `NightFireLauncher.exe`: choose your disc, get the game ready, Play, Update; nothing installed.
 - **PC Settings in the game's menus** - A native page in the game's own menus, from the main menu and the pause
   screen (see above).
 - **Achievements** - 19 achievements (every mission, medals, 00 Agent, Bond Moves) with pop-ups and a list in the
@@ -244,7 +251,7 @@ and to talk about the port with other players.
 
 - Something wrong: the first lines of the log in `logs\` list the settings, the GPU and any `XBE_*` or `NF_*`
   environment variables; leftover ones from experiments change how the game runs.
-- The launcher's build failing: send `NightFire\launcher.log`. Press Build again after a network problem: it carries
+- The launcher failing: send `NightFire\launcher.log`. Press the button again after a network problem: it carries
   on where it stopped.
 - A build failing with "permission denied" on `Nightfire.exe` or `NightfireDriving.exe`: the game is still running;
   close it and build again.

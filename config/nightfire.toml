@@ -5,6 +5,9 @@
 #   build/linux/xbe_symbols --sign config/nightfire.toml config/driving.toml --out sdk/xdk/4831/signatures.toml
 includes = ["game.toml"]
 
+[xbe]
+library = "Nightfire.dll"  # the game code DLL; this config is the one the build on the player's PC reads
+
 # XAPI / XPP (4831) the scan misses: each by its body against PGR2's (5659) or PGR1's (3948) and the calls given
 [symbols]
 XInitDevices            = 0x15753D  # allocates the 0xB4 byte USB host object, runs the device type table's inits
