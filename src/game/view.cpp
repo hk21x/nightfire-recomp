@@ -37,7 +37,7 @@ float Scaled(float fov) { return std::min(fov * nf::FovScale(), 2.9f); }  // sho
 // the camera at [esp+4] widened and its angle scaled while call runs
 template <class Fn>
 void Widened(uint32_t cam, Fn call) {
-    float k = R32(kWidescreen) ? nf::Ultrawide() : 1.0f, s = nf::FovScale();
+    float k = nf::Ultrawide(), s = nf::FovScale();
     if (!cam || (k <= 1.0f + 1e-3f && s == 1.0f)) return call();
     float aspect = GetF(cam + kAspect), fov = GetF(cam + kFov);
     SetF(cam + kAspect, aspect * k);

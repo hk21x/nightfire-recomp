@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <cmath>
 #include <cstdlib>
 #include <string>
 
@@ -24,11 +25,13 @@ float Ultrawide() {
         const char* e = std::getenv("NF_ULTRAWIDE");
         return e && *e ? float(std::atof(e)) : 0.0f;
     }();
-    if (!app::Widescreen()) return 1.0f;
-    float k = forced > 0 ? forced : std::max(app::FrameAspect(), 16.0f / 9.0f) / (16.0f / 9.0f);
-    static bool said = false;
-    if (k > 1.0f + 1e-3f && !said) {
-        said = true;
+    // the shape the game draws its 3D at: its 16:9 mode, or 4:3 (a screen between 4:3 and 16:9 widens the 4:3 mode:
+    // GameInfo::fills_narrow_screens)
+    const float drawn = app::Widescreen() ? 16.0f / 9.0f : 4.0f / 3.0f;
+    float k = forced > 0 ? forced : std::max(app::FrameAspect(), drawn) / drawn;
+    static float said = 1.0f;
+    if (std::fabs(k - said) > 1e-3f) {
+        said = k;
         LOGR("nightfire: 3D views widened %.3f times for the %.3f:1 frame", k, app::FrameAspect());
     }
     return k;
@@ -230,5 +233,6 @@ const app::GameInfo app::kGame = {
                                           // src/driving/mouse.cpp), not as the right stick
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
     .texture_bound = TextureBound,        // the button pictures as the keys, the fonts with smooth edges
+    .fills_narrow_screens = true,         // 16:10 and other screens between 4:3 and 16:9 widen the 4:3 mode, not letterbox
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };

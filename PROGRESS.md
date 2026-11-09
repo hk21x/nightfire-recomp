@@ -11,7 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 97b1654 (2026-11-04: F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at 89cafb8 (2026-11-09: 16:10 screens; 97b1654 F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -29,6 +29,17 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-09 - SDK at the fork's main 89cafb8: 16:10 screens
+
+- The SDK session (Harry's go): fork main 89cafb8 (a fast-forward of 119 commits from 97b1654, the 4831 signatures
+  untouched) has GameInfo::fills_narrow_screens: a screen between 4:3 and 16:9 widens the game's 4:3 mode instead of
+  letterboxing its 16:9 one. Harry passed NightFire at 16:10 on Windows (movies and the scope included) with four edits,
+  now committed: <cmath>; nf::Ultrawide() widens from the shape the game draws (16:9 in its widescreen mode, else 4:3),
+  logging each change; .fills_narrow_screens = true; view.cpp's Widened() no longer tests the widescreen flag itself.
+- Both recompile, rescans reproduce both configs, wincheck of src/ OK. Smoke OK by default (one earlier run read no
+  draw count for the menu window, -1, and passed when run again) and with OUTPUT=1280x800, where both programs log
+  "3D views widened 1.200 times for the 1.600:1 frame".
 
 ### 2026-11-04 - Release v1.1.0 published (prebuilt)
 
