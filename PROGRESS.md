@@ -11,7 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at 89cafb8 (2026-11-09: 16:10 screens; 97b1654 F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at ec0213b (2026-11-15: stick dead zone and sensitivity, #10; 89cafb8 16:10 screens; 97b1654 F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -29,6 +29,14 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - Data: `eurocom/filesys.d00`-`d10` and `eurocom/25_fps` (on foot), `driving/*.viv`, `.mus`, `.spe` (driving)
 
 ## Log
+
+### 2026-11-15 - SDK at the fork's main ec0213b: stick dead zone and sensitivity (issue #10)
+
+- stick-tuning reworked (ec0213b): the tuning is applied in Poll to the read inputs, on the game's thread, so it merges
+  cleanly with the SDK session's pad-thread branch (which moves ReadPad to its own thread) and with juiced. Gated on the
+  mains of PGR2, PGR1, EoN, AUF and NightFire (all SMOKE OK, PGR1 repro a live race), wincheck and launcher_cli link;
+  Harry's go, fast-forwarded into fork main. NightFire on it, both xbes regenerated: SMOKE OK.
+- Next: Harry to try the sticks with a pad on Windows; gyro not done (needs a gyro controller).
 
 ### 2026-11-15 - Issue #10: stick dead zone and sensitivity (SDK branch stick-tuning), and a rare crash
 
