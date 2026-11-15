@@ -222,7 +222,7 @@ the falling snow and the guards differ between them.
 ### Controller
 - **Stick dead zone and sensitivity** - Each stick has its own (F1, Controls tab, Controller sticks): a dead zone for a
   worn stick that drifts, on top of the game's own, and a sensitivity (below 100% slower turning at full tilt, above
-  it full speed sooner). `left_stick_deadzone`, `right_stick_sensitivity` and so on in `settings.toml`.
+  it full speed sooner; it scales the travel past the game's own dead zone, so the game's speed follows it). `left_stick_deadzone`, `right_stick_sensitivity` and so on in `settings.toml`.
 
 ### General
 - **Launcher** - `NightFireLauncher.exe`: choose your disc, get the game ready, Play, Update; nothing installed.

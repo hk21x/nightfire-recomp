@@ -11,7 +11,7 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 - XDK: 4831 named in the SDK (branch nightfire): default.xbe 137 of 252 functions, Driving.xbe 115 (6 by hand);
   layout proven from NightFire's code
 - Push buffers: none
-- SDK: the fork's main at ec0213b (2026-11-15: stick dead zone and sensitivity, #10; 89cafb8 16:10 screens; 97b1654 F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
+- SDK: the fork's main at b908ae7 (2026-11-15: stick sensitivity past the game's dead zone; ec0213b stick dead zone and sensitivity, #10; 89cafb8 16:10 screens; 97b1654 F1 overhaul, SMAA, prebuilt launcher; 37fa3dc D3D12 stage memo by contents; c4000f8 the launcher on drives without owners; 66a7066 the launcher takes every xbe; 0b5ff49 launcher updates; ed5e147 edge bars, unsuspended relaunch; 8acd824 vertex buffer locks wait for the renderer; ed1796c replacements for linear textures; 2026-10-28 ca1d0f9 point sprites) (2026-10-28: nightfire fast-forwarded in after EoN, PGR2 and PGR1 smoke and
   PGR1's frame check); the launcher can build this game now
 - PC features (pc-features): skip intro, mouse look and menu mouse, key layouts, PC Settings in the main menu, sharp
   2D, ultrawide and field of view; on Windows (2026-10-29) PC Settings, mounted guns, achievements and the icon
@@ -41,7 +41,10 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
   sensitivity scales the throw past it (0, the default, the old scale). NightFire: 0.30 on foot, 0.25 driving; on
   foot the counters are run out while either stick is below 100 (src/game/controls.cpp). Checked standalone: the
   game's value is now sensitivity times its own (30%: 36 at full throw, 50%: 60), before 0 and 26.
-- Smoke OK; wincheck OK. Next: Harry on Windows, then the all-games gate and his go for fork main.
+- Smoke OK; wincheck OK. Harry (Windows): "Works good, let's ship". Gate on b908ae7: PGR2, PGR1, EoN, AUF and
+  NightFire SMOKE OK, PGR1 repro a live race, launcher_cli links: fork main fast-forwarded to b908ae7.
+- Release notes for v1.2.0 (docs/releases/v1.2.0.md): stick settings (#10), Unlock All Codes (#9), Deep Descent keys
+  (#12), 16:10, Alt+Enter, the render thread. Next: tag v1.2.0 (a draft), Harry attaches the package and publishes.
 
 ### 2026-11-15 - SDK at the fork's main ec0213b: stick dead zone and sensitivity (issue #10)
 
