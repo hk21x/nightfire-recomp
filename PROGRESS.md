@@ -30,6 +30,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-15 - Issue #10: stick dead zone and sensitivity (SDK branch stick-tuning), and a rare crash
+
+- SDK fa0e050 on the fork's branch stick-tuning (from fork main 60fc186): Settings::stick_deadzone and
+  stick_sensitivity for each stick (left_stick_deadzone ... in settings.toml, rows in the Controls tab), a round dead
+  zone with the rest stretched to the full throw, then the sensitivity, on the controller's own sticks before the
+  remap. 0 and 100 (the defaults) return at once, so no game changes unless a player sets them. The harness's pads do
+  not pass through SDL, so the math was checked in a standalone test; Harry to try it with a pad.
+- NightFire on fork main + fa0e050 (both xbes regenerated): the first smoke failed, a segfault in Driving.xbe at 136 s,
+  as the movie after the sniper tutorial opens (just after "missing D:\PAL\eng\paris2.mad", which passing runs log too).
+  No core. Then 30 more runs of the driving part on that SDK did not crash (2 smokes, 10 under gdb, 3 smokes with
+  cores on, 16 side by side), and 16 side by side on 89cafb8 did not crash either: 1 in 31, not tied to an SDK yet.
+- main stays on 89cafb8 until #10 goes through the all-games gate.
+
 ### 2026-11-15 - Issues #12 (Deep Descent on the keyboard) and #9 (Unlock All Codes)
 
 - #12: Deep Descent's submarine pitches as a plane does (stick up dives, tested headless from a launch file with level
