@@ -73,6 +73,18 @@ void MenuMouse(int port, input::Pad& p) {
         ScopeZoom(notches);
         notches = 0;
     }
+    // Driving.xbe in play on the keyboard: the left stick's up and down swapped, so the up arrow (and Left Shift) rises
+    // and the down arrow (and Left Ctrl) dives. Deep Descent's submarine pitches as a plane does, stick up for nose
+    // down, which a controller keeps; on keys it read as inverted (issue #12). The car does not use the stick's up and
+    // down, and the menus (scrolled by them) are left alone
+    if (kDriving && !menu && input::UsingKeyboard() && p.ly) {
+        static bool said = false;
+        if (!said) {
+            said = true;
+            LOGR("nightfire: on the keyboard the up arrow rises and the down arrow dives (the stick's up and down swapped)");
+        }
+        p.ly = p.ly == INT16_MIN ? INT16_MAX : int16_t(-p.ly);
+    }
     // on foot where Bond is not the player's to move (a door's keypad, a missile, a cutscene) A is the console's
     // confirm, which the keyboard has as crouch (C, Ctrl): the left button and Enter press it too
     if (!kDriving && !menu && !PlayerFree() && input::UsingKeyboard() && ((held & 1) || KeyHeld(0x0D)))
