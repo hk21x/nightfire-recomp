@@ -54,7 +54,8 @@ using kernel::W32;
 
 constexpr uint32_t kPage = 0x4000FC10;
 constexpr uint32_t kFov = 0x1000FC11, kMouse = 0x1000FC12, kInvert = 0x1000FC13, kSkip = 0x1000FC14,
-                   kSharp = 0x1000FC15, kAspect = 0x1000FC16, kMore = 0x1000FC17;
+                   kSharp = 0x1000FC15, kAspect = 0x1000FC16, kMore = 0x1000FC17,
+                   kUnlock = 0x1000FC1F;
 constexpr uint32_t kDisplay = 0x1000FC1B, kResolution = 0x1000FC1C, kVsync = 0x1000FC1D, kCap = 0x1000FC1E;
 constexpr uint32_t kHelpBox = 0x10000225;
 constexpr uint32_t kSetById = 0x72820, kGoTo = 0x92C40, kSetWidget = 0x72630;
@@ -90,9 +91,11 @@ constexpr Row kRows[] = {
     {kResolution, kChoiceRow, "Resolution", "The window's or the screen's size; Desktop is the screen's own."},
     {kVsync, kChoiceRow, "Vertical Sync", "Frames shown with the screen's refresh: no tearing."},
     {kCap, kChoiceRow, "Frame Cap", "The most frames a second drawn."},
+    {kUnlock, kButtonRow, "Unlock All Codes",
+     "Enters every secret code, as if typed as a codename: everything they unlock is yours."},
     {kMore, kButtonRow, "More Settings", "Graphics, sound, controls and the rest in the settings window."},
 };
-constexpr int16_t kFirstY = 80, kRowStep = 24;  // AV's rows are 28 apart from 86: eleven need it closer
+constexpr int16_t kFirstY = 80, kRowStep = 24;  // AV's rows are 28 apart from 86: twelve need it closer
 
 // a string's guest copy, made once for each text (by its contents: a host pointer can be another string's later)
 uint32_t Str(const char* s) {
@@ -258,6 +261,36 @@ bool Ours(uint32_t id) {
     return false;
 }
 
+// the game's secret codes (issue #9), as a codename typed with one of them: 0x7D110 (cdecl, the text) checks it against
+// its 52 records (TNT and ZAP are immediates in its code, the rest strings at 0x160D90) and, on a match, stores that
+// record's mask as player 1's unlocks (the 64-bit masks at 0x25D6E8, by 0x7CB10 (lo, hi, 0, 0)), as the codename page
+// 0x8CC50 does. A record's mask is the unlocks there were with its bits flipped, so a code entered again takes its unlocks
+// away: what one clears is put back here, and the button can be pressed any number of times
+constexpr uint32_t kCheckCode = 0x7D110, kStoreUnlocks = 0x7CB10, kUnlocks = 0x25D6E8;
+constexpr const char* kCodes[] = {
+    "LAUNCH", "MAGAZINE", "PHOTON", "SESAME", "AU P2K", "SLEEPY", "P2000", "SCOPE", "SHUTTER", "LIFTOFF", "AU PP7",
+    "Q LAB", "BOOM", "ORBIT", "GUARDIAN", "TEAMWORK", "TRANSMIT", "TARGET", "GAMEROOM", "ZERO G", "HUGE EGO", "BLIMP",
+    "HEADCASE", "CIRCUS", "NUCLEAR", "SLICK", "BADGIRL", "MIDAS", "JANUS", "VOODOO", "NUMBER 1", "DENTAL", "ASSASSIN",
+    "JOELWADE", "BITESIZE", "MARTIAL", "BLACKTIE", "BOWLER", "PARTY", "VACUUM", "BLASTOFF", "PARADISE", "AQUA",
+    "FLAME", "MELTDOWN", "HIGHRISE", "BONSAI", "TRACTION", "POWDER", "PASSPORT", "TNT", "ZAP"};
+
+void UnlockAll(X86Context& ctx, uint32_t player) {
+    uint32_t before[2] = {R32(kUnlocks), R32(kUnlocks + 4)}, eax = ctx.eax, accepted = 0;
+    for (const char* code : kCodes) {
+        uint32_t lo = R32(kUnlocks), hi = R32(kUnlocks + 4);
+        if (kernel::CallGuest(ctx, kCheckCode, {Str(code)}) & 0xFF) accepted++;
+        uint32_t now_lo = R32(kUnlocks), now_hi = R32(kUnlocks + 4);
+        if ((lo & ~now_lo) || (hi & ~now_hi))
+            kernel::CallGuest(ctx, kStoreUnlocks, {lo | now_lo, hi | now_hi, 0, 0});
+    }
+    ctx.eax = eax;
+    LOGR("nightfire: %u of %zu secret codes entered (unlocks %08X%08X, were %08X%08X)", accepted, std::size(kCodes),
+         R32(kUnlocks + 4), R32(kUnlocks), before[1], before[0]);
+    static char line[96];
+    std::snprintf(line, sizeof line, "%u secret codes entered: their unlocks are yours.", accepted);
+    SetById(ctx, player, kHelpBox, 0x18, Str(line));
+}
+
 }  // namespace
 
 namespace nf {
@@ -267,6 +300,10 @@ bool PcPageMessage(X86Context& ctx, uint32_t player, uint32_t widget, uint32_t m
     if (id == kPage) {
         if (msg == 0x4C) Enter(ctx, player);
         if (msg == 0x4B) {
+            if (arg && R32(arg + 0x18) == kUnlock) {
+                UnlockAll(ctx, player);
+                return true;
+            }
             if (arg && R32(arg + 0x18) == kMore) {
                 std::lock_guard<std::recursive_mutex> lock(app::UiLock());
                 if (!app::OverlayOpen()) app::ToggleOverlay();

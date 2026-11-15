@@ -30,6 +30,18 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-15 - Issues #12 (Deep Descent on the keyboard) and #9 (Unlock All Codes)
+
+- #12: Deep Descent's submarine pitches as a plane does (stick up dives, tested headless from a launch file with level
+  0x09000002, mis11.viv). On the keyboard that read as inverted, so in Driving.xbe in play the keyboard's left-stick
+  up and down are swapped (src/common/menu_mouse.cpp): the up arrow and Left Shift rise. The car ignores the stick's
+  up and down; menus are left alone. Not testable headless (a pad script can't be on the keyboard): Harry to test.
+- #9: the codename check 0x7D110 holds 52 records (50 strings at 0x160D90, TNT and ZAP as immediates). A record's mask
+  is the current unlocks with its bits flipped, so a code entered twice turns its unlock off. PC Settings has an
+  Unlock All Codes button (0x1000FC1F) that enters all 52 and puts back any bit one clears. Headless: 52 of 52, unlocks
+  0 -> 7FFFEFC00124964F, and a second press leaves 7FFFEFC00124964F.
+- Next: #10 (stick dead zone and sensitivity, an SDK change).
+
 ### 2026-11-09 - SDK at the fork's main 89cafb8: 16:10 screens
 
 - The SDK session (Harry's go): fork main 89cafb8 (a fast-forward of 119 commits from 97b1654, the 4831 signatures

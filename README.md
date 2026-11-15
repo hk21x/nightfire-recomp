@@ -98,7 +98,7 @@ if it crashes.
 
 **PC Settings:** in the game's own menus, as the main menu's **PC Settings** item and a choice on the on-foot pause
 screen (under Continue, Restart and Quit): field of view, mouse sensitivity and invert, skip intro, sharp 2D, aspect,
-display mode, resolution, vsync and frame cap. **F1** opens the full settings window (graphics, renderer, controls) at
+display mode, resolution, vsync, frame cap and Unlock All Codes. **F1** opens the full settings window (graphics, renderer, controls) at
 any time; changes are saved at once to `settings.toml`.
 
 **Keyboard and mouse on foot** (remappable in the settings window's Controls tab, two keys per input):
@@ -226,6 +226,9 @@ the falling snow and the guards differ between them.
 - **Achievements** - 19 achievements (every mission, medals, 00 Agent, Bond Moves) with pop-ups and a list in the
   settings window, written in RetroAchievements' condition format; the set and its memory map are in
   [ACHIEVEMENTS.md](ACHIEVEMENTS.md).
+- **Unlock All Codes** - A button on the PC Settings page that enters all 52 of the game's secret codes at once
+  (levels, gadget upgrades, weapons and the multiplayer extras). Pressing it again
+  changes nothing: in the codename screen a code entered twice turns its unlock off again.
 - **Hide HUD** - Clears the HUD on foot and in the driving missions, for screenshots (`hide_hud`, F1; at once). The
   pause screens and menus stay.
 - **Quit Game** - The main menu has a Quit Game item, and the settings window (F1) has a Quit game button.
