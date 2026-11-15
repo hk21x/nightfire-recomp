@@ -30,6 +30,19 @@ Newest first. Each entry: date, what changed, what was learned, what's next.
 
 ## Log
 
+### 2026-11-15 - Stick sensitivity past the game's dead zone (Harry: 30% did not move)
+
+- Harry (Windows, 0f565b4): the stick dead zone works; the sensitivity is not linear, 30% does not move at all.
+- default.xbe's pad poll 0xE76A0 makes each axis -100..100, zeroes it inside 30 and stretches the rest (times 1.2,
+  held to 100 round); an axis of a pad just plugged in has 60 until it has been past 90 each way for five polls
+  (counters from 0x2FF524, 0xA8 a port). Driving.xbe's 0x108490 zeroes each axis under 0.25 (no stretch). A linear
+  30% never left the 30 (and never reached 90, so the axes kept 60).
+- SDK b908ae7 (fork branch stick-past-deadzone): GameInfo::stick_deadzone, the game's dead zone on each axis; the
+  sensitivity scales the throw past it (0, the default, the old scale). NightFire: 0.30 on foot, 0.25 driving; on
+  foot the counters are run out while either stick is below 100 (src/game/controls.cpp). Checked standalone: the
+  game's value is now sensitivity times its own (30%: 36 at full throw, 50%: 60), before 0 and 26.
+- Smoke OK; wincheck OK. Next: Harry on Windows, then the all-games gate and his go for fork main.
+
 ### 2026-11-15 - SDK at the fork's main ec0213b: stick dead zone and sensitivity (issue #10)
 
 - stick-tuning reworked (ec0213b): the tuning is applied in Poll to the read inputs, on the game's thread, so it merges

@@ -234,5 +234,6 @@ const app::GameInfo app::kGame = {
     .default_keys = Keys,                 // a shooter's keys on foot, a driving layout in Driving.xbe
     .texture_bound = TextureBound,        // the button pictures as the keys, the fonts with smooth edges
     .fills_narrow_screens = true,         // 16:10 and other screens between 4:3 and 16:9 widen the 4:3 mode, not letterbox
+    .stick_deadzone = nf::kDriving ? 0.25f : 0.30f,  // each stick axis's: Driving.xbe's 0x108490, default.xbe's 0xE76A0
     // optional, after these: .wheel (what a steering wheel's force feedback follows)
 };

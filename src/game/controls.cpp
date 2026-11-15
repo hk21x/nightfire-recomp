@@ -7,6 +7,7 @@
 // controller 1 is played on the keyboard and mouse its player's style is 0, so the game's prompts and controls page
 // name the buttons the keys play (the pictures show the keys: src/common/buttons.cpp); a controller puts the chosen
 // style back, and the profile is written with it (0x6ED30 packs a player's controls for the save and the launch data).
+#include "app/app.h"
 #include "common/nightfire.h"
 #include "core/input.h"
 #include "core/log.h"
@@ -59,4 +60,19 @@ X86_FUNC(sub_0006ED30) {
     style = g_chosen;
     __imp__sub_0006ED30(ctx, base);
     style = 0;
+}
+
+// The pads' poll 0xE76A0 makes each stick axis -100 to 100, takes a dead zone off it and stretches the rest (then 1.2
+// times, held to 100 round). The dead zone is 30 (app::kGame.stick_deadzone), but 60 on an axis of a pad plugged in
+// until that axis has been held past 90 each way for five polls (two counters an axis from 0x2FF524, 0xA8 a port,
+// set to 5 when plugged in). A stick at a lower sensitivity (the Controls tab) may never reach 90, and its axes stayed
+// at 60: while either stick is below 100 the counters are run out, the pad's sticks taken as centred (SDL's are).
+X86_EXTERN_FUNC(__imp__sub_000E76A0);
+X86_FUNC(sub_000E76A0) {
+    const app::Settings& s = app::Get();
+    if (s.stick_sensitivity[0] < 100 || s.stick_sensitivity[1] < 100) {
+        for (uint32_t port = 0; port < 4; port++)
+            for (uint32_t c = 0; c < 8; c++) kernel::W32(0x2FF524 + port * 0xA8 + c * 4, 0);
+    }
+    __imp__sub_000E76A0(ctx, base);
 }
